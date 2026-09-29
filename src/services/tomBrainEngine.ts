@@ -34,7 +34,7 @@ export function generateClientTomReply(
   if (q.includes("sudo tom")) {
     return {
       reply:
-        "Sudo Tom: Developer Mode Active.\n\nRuntime: TOM (Trusted Online Memory) Engine v1.0.0.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md & NotebookLM Master Vault.\nGoogle Gemini Gems Architecture:\n• Gem #1: Tom (The Unbending Curb Mentor)\n• Gem #2: Bambi (Process Engine / Love & Support Gem • 5-Stage Diagnostic Loop)\n• Gem #3: Grower (Growth & Learning Engine)\nActive Gem Mode: " + gemMode + "\nOrder of Operations: Observe → Reflect → Notice → Challenge → Move.\nStabilization Rule: Stabilization before interpretation.\nLive Gem: https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4\nStanding by for architecture, behavior, or memory pipeline modifications.",
+        "Sudo Tom: Developer Mode Active.\n\nRuntime: TOM (Trusted Online Memory) Engine v1.0.0.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md & NotebookLM Master Vault.\nGoogle Gemini Gems Architecture:\n• Gem #1: Tom (The Unbending Curb Mentor)\n• Gem #2: BAMBI (Process Engine / Love & Support Gem)\n• Gem #3: Grower (Growth & Learning Engine)\nActive Gem Mode: " + gemMode + "\nOrder of Operations: Observe → Reflect → Notice → Challenge → Move.\nStabilization Rule: Stabilization before interpretation.\nLive Gem: https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4\nStanding by for architecture, behavior, or memory pipeline modifications.",
       avatarEmotion: "explaining",
       searchQueries: ["Sudo Tom Developer Mode", "TOM System Architecture", "NotebookLM Master Knowledge Vault"],
       searchSources: [

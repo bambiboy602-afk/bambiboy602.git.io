@@ -83,13 +83,13 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
 
             <div className="mt-4 flex flex-wrap items-center gap-2.5">
               <a
-                href={OFFICIAL_TOM_GEM_URL}
+                href={selectedGem.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold shadow-md transition-all active:scale-95"
               >
                 <Sparkles className="w-4 h-4 text-stone-900" />
-                <span>Open Tom Live on Google Gem</span>
+                <span>Open {selectedGem.title} Live on Google Gem</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
 

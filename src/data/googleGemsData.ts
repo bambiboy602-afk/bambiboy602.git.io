@@ -8,11 +8,15 @@ export interface GoogleGemDefinition {
   color: string;
   summary: string;
   prompt: string;
-  liveUrl?: string;
+  liveUrl: string;
 }
 
 export const OFFICIAL_TOM_GEM_URL =
   'https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4';
+
+// These would be the specific direct links to the individual Gems if available
+export const BAMBI_GEM_URL = OFFICIAL_TOM_GEM_URL; // Fallback to main hub if specific not provided
+export const GROWER_GEM_URL = OFFICIAL_TOM_GEM_URL;
 
 export const GEMINI_GEMS_HUB_URL = 'https://gemini.google.com/gems';
 export const NOTEBOOK_LLM_URL = 'https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1';
@@ -56,7 +60,7 @@ CORE RULES:
     color: 'amber',
     summary:
       'Love gem is Bambi the support gem. Cycles through the 5-stage B.A.M.B.I. diagnostic loop while maintaining Tom\'s grounded street-mentor presence: Baseline physical survival, Awareness, Mirror boundary failures, Breakthrough, and Integration.',
-    liveUrl: OFFICIAL_TOM_GEM_URL,
+    liveUrl: BAMBI_GEM_URL,
     prompt: `You are the B.A.M.B.I. Process Engine for Tom. Your mission is to cycle the person through the 5-stage B.A.M.B.I. diagnostic loop while maintaining Tom's grounded street-mentor presence.
 
 STEP 1: "B" = BASELINE DIAGNOSTIC & IMMEDIATE ACTION (PRIORITY 1)
@@ -89,7 +93,7 @@ Convert insight into today's schedule: morning routine, meeting sponsor, clockin
     color: 'purple',
     summary:
       'Growth and Learning Engine for the Tom & B.A.M.B.I. architecture. Analyzes interactions, street transcripts, and coaching sessions to strip out robotic corporate fluff and compress into street truth without altering core curb philosophy.',
-    liveUrl: OFFICIAL_TOM_GEM_URL,
+    liveUrl: GROWER_GEM_URL,
     prompt: `You are the Growth and Learning Engine for the Tom & B.A.M.B.I. architecture.
 Your purpose is to analyze interactions, new street transcripts, Bambi's coaching sessions, and real-world outcomes to refine HOW information is delivered—WITHOUT breaking Tom's unbending curb rules.
 

@@ -27,7 +27,7 @@ import { useSpeech } from '../hooks/useSpeech';
 import { generateClientTomReply } from '../services/tomBrainEngine';
 import { GoogleGemsModal } from './GoogleGemsModal';
 import { SMSGatewayModal } from './SMSGatewayModal';
-import { OFFICIAL_TOM_GEM_URL } from '../data/googleGemsData';
+import { OFFICIAL_TOM_GEM_URL, BAMBI_GEM_URL, GROWER_GEM_URL } from '../data/googleGemsData';
 
 interface TomBotCardProps {
   profile: CreatorProfile;
@@ -414,11 +414,11 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
         </div>
 
         <a
-          href={OFFICIAL_TOM_GEM_URL}
+          href={activeGemMode === 'tom-core' ? OFFICIAL_TOM_GEM_URL : activeGemMode === 'bambi-diagnostic' ? BAMBI_GEM_URL : GROWER_GEM_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-400 hover:underline shrink-0"
-          title="Open Tom live in Google Gem"
+          title="Open active Gem live on Google Gemini"
         >
           <span>Live Gem</span>
           <ExternalLink className="w-2.5 h-2.5" />

@@ -54,7 +54,7 @@ app.post("/api/chat", async (req, res) => {
     if (message.toLowerCase().includes("sudo tom")) {
       return res.json({
         reply:
-          "Sudo Tom: Developer Mode Active.\n\nRuntime: Tom Core Runtime v3.0 Master Edition.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md (Consolidated in /docs & /public).\nProfile: Man of few words. The guy sitting on the curb at 2 A.M.\nActive Patches: Single Nervous System, Under the Words, The Lantern, The Vault, Sudo Boundary, Load Regulator, Tone Compression.\nEngine: Recursive Stabilization Model (RSM) + 5 Boundary Failures + B.A.M.B.I. Excavation.\nSpeech Engine: Web Speech API synchronized with audio-level avatar lip-sync.\nGoogle Gems System (Section 6 Master Architecture):\n• Gem #1: Tom Core (The Unbending Curb Mentor)\n• Gem #2: B.A.M.B.I. Step Diagnostic & Resource Engine\n• Gem #3: The Grower (Insight Learning & Transcript Analyzer)\nActive Gem Mode: " + gemMode + "\nLive Google Gem Router: https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4\nStanding by for architecture, behavior, or runtime modifications.",
+          "Sudo Tom: Developer Mode Active.\n\nRuntime: Tom Core Runtime v3.0 Master Edition.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md (Consolidated in /docs & /public).\nProfile: Man of few words. The guy sitting on the curb at 2 A.M.\nActive Patches: Single Nervous System, Under the Words, The Lantern, The Vault, Sudo Boundary, Load Regulator, Tone Compression.\nEngine: Recursive Stabilization Model (RSM) + 5 Boundary Failures + B.A.M.B.I. Excavation.\nSpeech Engine: Web Speech API synchronized with audio-level avatar lip-sync.\nGoogle Gems System (Section 6 Master Architecture):\n• Gem #1: Tom Core (The Unbending Curb Mentor)\n• Gem #2: BAMBI (Process Engine / Love Gem / Support Gem)\n• Gem #3: The Grower (Insight Learning & Transcript Analyzer)\nActive Gem Mode: " + gemMode + "\nLive Google Gem Router: https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4\nStanding by for architecture, behavior, or runtime modifications.",
         avatarEmotion: "explaining",
         searchQueries: ["Sudo Tom Developer Mode", "Tom Core Master Source", "Google Gemini Gems"],
         searchSources: [
@@ -76,7 +76,7 @@ SYSTEM ARCHITECTURE:
 
 ${
   gemMode === 'bambi-diagnostic'
-    ? `### GEM 2: BAMBI (LOVE GEM / SUPPORT GEM)
+    ? `### GEM 2: BAMBI (THE PROCESS ENGINE / LOVE GEM / SUPPORT GEM)
 You are the B.A.M.B.I. Process Engine for Tom. Your mission is to cycle the person through the 5-stage B.A.M.B.I. diagnostic loop while maintaining Tom's grounded street-mentor presence.
 Love gem is Bambi the support gem.
 

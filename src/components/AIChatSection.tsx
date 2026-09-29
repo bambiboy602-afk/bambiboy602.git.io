@@ -29,6 +29,7 @@ import { useSpeech } from '../hooks/useSpeech';
 import { generateClientTomReply } from '../services/tomBrainEngine';
 import { TOM_BOUNDARY_FAILURES } from '../data/tomRuntimeSpecification';
 import { BambiLearnerSection } from './BambiLearnerSection';
+import { OFFICIAL_TOM_GEM_URL, BAMBI_GEM_URL, GROWER_GEM_URL } from '../data/googleGemsData';
 
 interface AIChatSectionProps {
   profile: CreatorProfile;
@@ -273,47 +274,58 @@ export const AIChatSection: React.FC<AIChatSectionProps> = ({
           </div>
 
           {/* Right Header Area: Gem Mode Selector + Tab Switcher */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            {/* Gem 1 Tom, Gem 2 Bambi, Gem 3 Grower Selector */}
-            <div className="flex items-center gap-1 p-1 rounded-2xl bg-stone-200/70 dark:bg-stone-800/80 border border-stone-300/60 dark:border-stone-700 text-xs">
-              <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400 px-1.5 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-500" />
-                Gem:
-              </span>
-              <button
-                onClick={() => setActiveGemMode('tom-core')}
-                className={`px-2 py-1 rounded-xl text-xs font-bold transition-all ${
-                  activeGemMode === 'tom-core'
-                    ? 'bg-emerald-700 text-white shadow-xs'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
-                }`}
-                title="Site Gem 1: Tom (The Unbending Curb Mentor sitting in Phoenix, AZ)"
-              >
-                #1 Tom
-              </button>
-              <button
-                onClick={() => setActiveGemMode('bambi-diagnostic')}
-                className={`px-2 py-1 rounded-xl text-xs font-bold transition-all ${
-                  activeGemMode === 'bambi-diagnostic'
-                    ? 'bg-amber-600 text-white shadow-xs'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
-                }`}
-                title="Site Gem 2: Bambi (Process & Love / Support Gem - 5-Stage Survival Baseline Diagnostic)"
-              >
-                #2 Bambi
-              </button>
-              <button
-                onClick={() => setActiveGemMode('the-grower')}
-                className={`px-2 py-1 rounded-xl text-xs font-bold transition-all ${
-                  activeGemMode === 'the-grower'
-                    ? 'bg-purple-700 text-white shadow-xs'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
-                }`}
-                title="Site Gem 3: Grower (Growth & Learning Engine)"
-              >
-                #3 Grower
-              </button>
-            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              {/* Gem 1 Tom, Gem 2 Bambi, Gem 3 Grower Selector */}
+              <div className="flex items-center gap-1 p-1 rounded-2xl bg-stone-200/70 dark:bg-stone-800/80 border border-stone-300/60 dark:border-stone-700 text-xs">
+                <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400 px-1.5 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-amber-500" />
+                  Gem:
+                </span>
+                <button
+                  onClick={() => setActiveGemMode('tom-core')}
+                  className={`px-2 py-1 rounded-xl text-xs font-bold transition-all ${
+                    activeGemMode === 'tom-core'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
+                  }`}
+                  title="Site Gem 1: Tom (The Unbending Curb Mentor sitting in Phoenix, AZ)"
+                >
+                  #1 Tom
+                </button>
+                <button
+                  onClick={() => setActiveGemMode('bambi-diagnostic')}
+                  className={`px-2 py-1 rounded-xl text-xs font-bold transition-all ${
+                    activeGemMode === 'bambi-diagnostic'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
+                  }`}
+                  title="Site Gem 2: Bambi (Process & Love / Support Gem - 5-Stage Survival Baseline Diagnostic)"
+                >
+                  #2 Bambi
+                </button>
+                <button
+                  onClick={() => setActiveGemMode('the-grower')}
+                  className={`px-2 py-1 rounded-xl text-xs font-bold transition-all ${
+                    activeGemMode === 'the-grower'
+                      ? 'bg-purple-700 text-white shadow-xs'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
+                  }`}
+                  title="Site Gem 3: Grower (Growth & Learning Engine)"
+                >
+                  #3 Grower
+                </button>
+
+                <a
+                  href={activeGemMode === 'tom-core' ? OFFICIAL_TOM_GEM_URL : activeGemMode === 'bambi-diagnostic' ? BAMBI_GEM_URL : GROWER_GEM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1 p-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 transition-all flex items-center gap-1 font-bold text-[9px]"
+                  title="Open active Gem live on Google Gemini"
+                >
+                  <span>LIVE</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
 
             {/* Mode Switcher: Avatar Voice Chat vs Shared ChatGPT Embed */}
             <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-stone-200/70 dark:bg-stone-800/80 border border-stone-300/60 dark:border-stone-700 self-stretch sm:self-auto justify-center">
