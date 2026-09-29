@@ -384,9 +384,9 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                   ? 'bg-emerald-700 text-white shadow-xs'
                   : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
               }`}
-              title="Gem #1: Tom Core (Curb Mentor)"
+              title="Site Gem 1: Tom (The Unbending Curb Mentor sitting in Phoenix, AZ)"
             >
-              #1 Curb
+              #1 Tom
             </button>
             <button
               onClick={() => setActiveGemMode('bambi-diagnostic')}
@@ -395,9 +395,9 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                   ? 'bg-amber-600 text-white shadow-xs'
                   : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
               }`}
-              title="Gem #2: B.A.M.B.I. Diagnostic (Physical survival + 5 boundary mirrors)"
+              title="Site Gem 2: Bambi (Process & Love / Support Gem - 5-Stage Survival Baseline Diagnostic)"
             >
-              #2 Diagnostic
+              #2 Bambi
             </button>
             <button
               onClick={() => setActiveGemMode('the-grower')}
@@ -406,7 +406,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                   ? 'bg-purple-700 text-white shadow-xs'
                   : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
               }`}
-              title="Gem #3: The Grower (Transcript analyzer & learning)"
+              title="Site Gem 3: Grower (Growth & Learning Engine)"
             >
               #3 Grower
             </button>

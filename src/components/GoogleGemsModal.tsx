@@ -75,10 +75,10 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
             </div>
 
             <h2 className="text-xl sm:text-2xl font-bold font-serif">
-              Tom &amp; B.A.M.B.I. 3-Gem System
+              TOM (Trusted Online Memory) System
             </h2>
             <p className="text-xs sm:text-sm text-stone-300 max-w-xl mt-1 leading-relaxed">
-              Official custom Gemini Gems configured for street peer recovery, real-time physical stabilization, and continuous lived-experience learning.
+              Google Gemini Custom Gems for Tom Core, B.A.M.B.I. Step Diagnostic loop, and The Grower insight engine, grounded in the NotebookLM Master Vault.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-2.5">
@@ -94,23 +94,24 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
               </a>
 
               <a
+                href={NOTEBOOK_LLM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/15 transition-colors"
+                title="Tom & B.A.M.B.I. Master Knowledge Vault"
+              >
+                <BookOpen className="w-3 h-3 text-amber-300" />
+                <span>NotebookLM Master Vault</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+
+              <a
                 href={GEMINI_GEMS_HUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/15 transition-colors"
               >
-                <span>Google Gems Hub</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-
-              <a
-                href={NOTEBOOK_LLM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/15 transition-colors"
-              >
-                <BookOpen className="w-3 h-3 text-amber-300" />
-                <span>NotebookLLM Vault</span>
+                <span>Gemini Gems Hub</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>

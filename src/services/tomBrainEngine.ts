@@ -34,12 +34,12 @@ export function generateClientTomReply(
   if (q.includes("sudo tom")) {
     return {
       reply:
-        "Sudo Tom: Developer Mode Active.\n\nRuntime: Tom Core Runtime v3.0 Master Edition.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md (Active in /docs & /public).\nGoogle Gems Architecture:\n• Gem #1: Tom Core (The Unbending Curb Mentor)\n• Gem #2: B.A.M.B.I. Step Diagnostic & Resource Engine\n• Gem #3: The Grower (Insight Learning & Transcript Analyzer)\nActive Gem Mode: " + gemMode + "\nLive Gem Link: https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4\nActive Patches: Single Nervous System, Under the Words, The Lantern, The Vault, Sudo Boundary, Load Regulator, Tone Compression.\nEngine: Recursive Stabilization Model (RSM) + 5 Boundary Failures + B.A.M.B.I. Excavation.\nHost Mode: Standalone Hybrid (Active on Localhost & GitHub Pages bambiboy602.com).\nStanding by for architecture, behavior, or learner model modifications.",
+        "Sudo Tom: Developer Mode Active.\n\nRuntime: TOM (Trusted Online Memory) Engine v1.0.0.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md & NotebookLM Master Vault.\nGoogle Gemini Gems Architecture:\n• Gem #1: Tom (The Unbending Curb Mentor)\n• Gem #2: Bambi (Process Engine / Love & Support Gem • 5-Stage Diagnostic Loop)\n• Gem #3: Grower (Growth & Learning Engine)\nActive Gem Mode: " + gemMode + "\nOrder of Operations: Observe → Reflect → Notice → Challenge → Move.\nStabilization Rule: Stabilization before interpretation.\nLive Gem: https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4\nStanding by for architecture, behavior, or memory pipeline modifications.",
       avatarEmotion: "explaining",
-      searchQueries: ["Sudo Tom Developer Mode", "Tom Core Master Source", "Google Gemini Gems"],
+      searchQueries: ["Sudo Tom Developer Mode", "TOM System Architecture", "NotebookLM Master Knowledge Vault"],
       searchSources: [
         { title: "Tom Google Gem (Live)", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
-        { title: "Gemini Gems Hub", uri: "https://gemini.google.com/gems" },
+        { title: "NotebookLM Master Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
         { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
       ],
     };
@@ -49,12 +49,12 @@ export function generateClientTomReply(
   if (q.includes("google gem") || q.includes("gemini gem") || q.includes("gems") || q.includes("gem prompt")) {
     return {
       reply:
-        "The Tom & B.A.M.B.I. system is deployed across 3 specialized Google Gemini Gems:\n\n1. Gem #1: Tom Core (The Unbending Curb Mentor — short, observant, pure street truth)\n2. Gem #2: B.A.M.B.I. Step Diagnostic (Checks immediate physical survival: shelter beds, detox, food before deeper emotional work)\n3. Gem #3: The Grower (Insight learning engine, transcript analyzer, strips corporate fluff)\n\nYou can talk to Tom directly on Google Gem at https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4 or switch Gem modes right here.",
+        "The TOM system runs on 3 Google Gemini Gems:\n\n1. GEM 1 - TOM: You sit on the curb in Phoenix, Arizona. A peer mentor rooted in lived experience of addiction, incarceration, relapse, street survival, and recovery.\n2. GEM 2 - BAMBI (LOVE/SUPPORT GEM): Process engine cycling through the 5-stage B.A.M.B.I. diagnostic loop: Baseline survival, Awareness, Mirror boundary failures, Breakthrough, and Integration.\n3. GEM 3 - GROWER: Analyzes interactions, street transcripts, and coaching sessions to strip out robotic corporate fluff into punchier street truth.\n\nGrounding vault: NotebookLM Tom & B.A.M.B.I. Master Knowledge Vault.",
       avatarEmotion: "explaining",
-      searchQueries: ["Google Gemini Gems System", "Tom Google Gem"],
+      searchQueries: ["TOM System Architecture", "Google Gemini Gems", "NotebookLM Vault"],
       searchSources: [
         { title: "Tom Google Gem (Live)", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
-        { title: "Gemini Gems Hub", uri: "https://gemini.google.com/gems" },
+        { title: "NotebookLM Master Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
       ],
     };
   }
