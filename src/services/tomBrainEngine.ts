@@ -13,6 +13,11 @@
 
 import { TOM_BOUNDARY_FAILURES } from '../data/tomRuntimeSpecification';
 import { HOUSING_RESOURCES } from '../data/communityResourcesData';
+import {
+  TOM_OPENING_STATEMENT,
+  TOM_CURB_REFLECTIONS,
+  getRotatingTomReflection,
+} from '../data/tomOpeningStatements';
 
 export interface TomBrainResponse {
   reply: string;
@@ -55,6 +60,22 @@ export function generateClientTomReply(
       searchSources: [
         { title: "Tom Google Gem (Live)", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
         { title: "NotebookLM Master Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+      ],
+    };
+  }
+
+  // Intercept empty or raw agent meta errors
+  if (
+    q.includes("empty objective") ||
+    q.includes("no instructions on how to proceed") ||
+    q === ""
+  ) {
+    return {
+      reply: TOM_OPENING_STATEMENT.chatWelcome,
+      avatarEmotion: "talking",
+      searchQueries: ["B.A.M.B.I. Peer Support", "Tom Curb Mentorship"],
+      searchSources: [
+        { title: "B.A.M.B.I. Support Line", uri: "tel:602-767-2147" },
       ],
     };
   }
@@ -388,19 +409,12 @@ export function generateClientTomReply(
     };
   }
 
-  // 15. Conversational Inquiry / General Reflection (Tom Style)
-  const conversationalPhrases = [
-    "I'm sitting right here on the curb with you. What part of this feels heaviest right now?",
-    "Every hard chapter has a turning point. Where does the chain feel like it's pulling you today?",
-    "I hear you. When was the last time you felt steady, even for an hour?",
-    "That sounds like a lot of noise in your head. What's one small thing you have control over in the next hour?",
-    "Most people try to fix the whole roof at once. What's the one leak in front of you right now?",
-  ];
-
-  const randomReply = conversationalPhrases[Math.floor(Math.random() * conversationalPhrases.length)];
+  // 15. Conversational Inquiry / General Reflection (Tom Style with Rotating Reflections)
+  const lastBotMsg = [...history].reverse().find((h) => h.sender === 'bot');
+  const rotatingReply = getRotatingTomReflection(lastBotMsg?.text);
 
   return {
-    reply: randomReply,
+    reply: rotatingReply,
     avatarEmotion: "thoughtful",
     searchQueries: ["B.A.M.B.I. Peer Support", "Tom Core Runtime"],
     searchSources: [

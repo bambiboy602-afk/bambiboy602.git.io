@@ -28,6 +28,7 @@ import { generateClientTomReply } from '../services/tomBrainEngine';
 import { GoogleGemsModal } from './GoogleGemsModal';
 import { SMSGatewayModal } from './SMSGatewayModal';
 import { OFFICIAL_TOM_GEM_URL, BAMBI_GEM_URL, GROWER_GEM_URL } from '../data/googleGemsData';
+import { TOM_OPENING_STATEMENT } from '../data/tomOpeningStatements';
 
 interface TomBotCardProps {
   profile: CreatorProfile;
@@ -107,19 +108,19 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
   const applyVoicePreset = (p: number, r: number, presetName: string) => {
     setPitch(p);
     setRate(r);
-    speak(`Sound profile set to ${presetName}. Grounded and ready on the curb.`);
+    speak(TOM_OPENING_STATEMENT.soundPresetPhrase(presetName));
   };
 
   const handleTestVoice = () => {
-    speak("Hey, what's up. Real recovery happens one day, one moment at a time. I'm right here with you.");
+    speak(TOM_OPENING_STATEMENT.voiceTestPhrase);
   };
 
-  // Chat message history initialized with Tom's curb persona
+  // Chat message history initialized with Tom's curb persona from TOM_OPENING_STATEMENT
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome-tom',
       sender: 'bot',
-      text: `I'm Tom. Sitting on the curb. No lectures, no hurry. What are you carrying today?`,
+      text: TOM_OPENING_STATEMENT.chatWelcome,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       emotion: 'greeting',
     },
@@ -147,7 +148,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
     } else {
       setAvatarEmotion('happy');
       speak(
-        "Hey! I'm Tom, Bambi's peer mentor. Sitting on the curb. No lectures, no hurry. Tap the mic or type anytime.",
+        TOM_OPENING_STATEMENT.avatarTapGreeting,
         () => setAvatarEmotion('idle')
       );
     }
@@ -156,6 +157,14 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
   const handleSendMessage = async (textToSend?: string) => {
     const query = (textToSend || inputMessage).trim();
     if (!query || isThinking) return;
+
+    // Loop Guard: Prevent sending the exact message Tom just said
+    const lastBotMsg = [...messages].reverse().find((m) => m.sender === 'bot');
+    if (lastBotMsg && lastBotMsg.text.trim().toLowerCase() === query.toLowerCase()) {
+      console.log('Suppressed echo loop message matching last bot response');
+      setInputMessage('');
+      return;
+    }
 
     setInputMessage('');
     stopSpeaking();

@@ -5,6 +5,11 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { recordSMSLog, getSMSLogs, getSMSStats, sendSMS } from "./src/lib/sms";
+import {
+  TOM_OPENING_STATEMENT,
+  TOM_CURB_REFLECTIONS,
+  getRotatingTomReflection,
+} from "./src/data/tomOpeningStatements";
 
 dotenv.config();
 
@@ -14,13 +19,12 @@ const PORT = 3000;
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// Server-side Gemini client
-const apiKey = process.env.GEMINI_API_KEY;
-let ai: GoogleGenAI | null = null;
-
-if (apiKey) {
-  ai = new GoogleGenAI({
-    apiKey: apiKey,
+// Server-side Gemini client factory (dynamically evaluates process.env.GEMINI_API_KEY so key rotations take effect immediately)
+function getGeminiClient(): GoogleGenAI | null {
+  const currentKey = process.env.GEMINI_API_KEY?.trim();
+  if (!currentKey) return null;
+  return new GoogleGenAI({
+    apiKey: currentKey,
     httpOptions: {
       headers: {
         "User-Agent": "aistudio-build",
@@ -29,11 +33,19 @@ if (apiKey) {
   });
 }
 
-// Health check
+// Health check with detailed API key status for key rotation diagnostics
 app.get("/api/health", (_req, res) => {
+  const key = process.env.GEMINI_API_KEY?.trim() || "";
+  const maskedKey = key
+    ? `${key.substring(0, 4)}...${key.substring(Math.max(0, key.length - 4))}`
+    : "NOT_SET";
+
   res.json({
     status: "ok",
-    hasApiKey: Boolean(process.env.GEMINI_API_KEY),
+    hasApiKey: Boolean(key),
+    maskedApiKey: maskedKey,
+    keyRotationGuide:
+      "To rotate your Gemini API key: In Google AI Studio, open the Secrets panel or set the GEMINI_API_KEY environment variable. The server re-evaluates the key on every request without requiring a server rebuild.",
     time: new Date().toISOString(),
   });
 });
@@ -43,8 +55,19 @@ app.post("/api/chat", async (req, res) => {
   try {
     const { message, history, profileContext, products, gemMode = 'tom-core' } = req.body;
 
-    if (!message || typeof message !== "string") {
+    if (!message || typeof message !== "string" || !message.trim()) {
       return res.status(400).json({ error: "Message is required." });
+    }
+
+    // Intercept empty objective error phrases immediately to instantly kill any loop
+    const lowMsg = message.toLowerCase().trim();
+    if (lowMsg.includes("empty objective") || lowMsg.includes("no instructions on how to proceed")) {
+      return res.json({
+        reply: TOM_OPENING_STATEMENT.chatWelcome,
+        avatarEmotion: "greeting",
+        searchQueries: [],
+        searchSources: [],
+      });
     }
 
     // Helper for intelligent, street-smart peer support fallback
@@ -388,7 +411,10 @@ Keep your answers brief (1 to 3 short sentences).
 Short. Heavy. Useful.
 Never lecture. Never patronize.`;
 
+    const ai = getGeminiClient();
+
     if (!ai) {
+      console.log("[GEMINI NOTICE] No GEMINI_API_KEY detected. Using local B.A.M.B.I. curb mentor engine.");
       return res.json({
         reply: fallbackResponse.reply,
         avatarEmotion: fallbackResponse.emotion,
@@ -446,41 +472,64 @@ Never lecture. Never patronize.`;
         }
       }
     } catch (primaryError: any) {
+      const isAuthOrLeakError =
+        primaryError?.status === 400 ||
+        primaryError?.status === 401 ||
+        primaryError?.status === 403 ||
+        primaryError?.message?.includes("API_KEY") ||
+        primaryError?.message?.includes("PERMISSION_DENIED");
+
       const isQuotaError =
         primaryError?.status === 429 ||
         primaryError?.message?.includes("429") ||
         primaryError?.message?.includes("RESOURCE_EXHAUSTED") ||
         primaryError?.message?.includes("quota");
 
-      if (isQuotaError) {
+      if (isAuthOrLeakError) {
+        console.warn(
+          "[API KEY NOTICE] Gemini API Key authentication failed or revoked (" +
+            primaryError?.message +
+            "). Rotate your GEMINI_API_KEY in AI Studio Secrets panel."
+        );
+      } else if (isQuotaError) {
         console.warn("Gemini 3.8 Flash quota/rate limit exceeded. Trying gemini-3.1-flash-lite fallback...");
       } else {
         console.warn("Gemini 3.8 Flash encountered error:", primaryError?.message);
       }
 
       // Attempt 2: gemini-3.1-flash-lite without search tools to conserve quota
-      try {
-        const fallbackAiResponse = await ai.models.generateContent({
-          model: "gemini-3.1-flash-lite",
-          contents: formattedContents,
-          config: {
-            systemInstruction,
-            temperature: 0.7,
-          },
-        });
-        replyText = fallbackAiResponse.text?.trim() || "";
-      } catch (secondaryError: any) {
-        console.warn(
-          "Gemini API quota currently exhausted (429). Seamlessly serving Tom's dedicated B.A.M.B.I. local peer mentor engine."
-        );
-        // Fall back to intelligent peer support engine seamlessly
+      if (!isAuthOrLeakError) {
+        try {
+          const fallbackAiResponse = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: formattedContents,
+            config: {
+              systemInstruction,
+              temperature: 0.7,
+            },
+          });
+          replyText = fallbackAiResponse.text?.trim() || "";
+        } catch (secondaryError: any) {
+          console.warn(
+            "Gemini fallback exhausted. Serving Tom's dedicated B.A.M.B.I. local peer mentor engine."
+          );
+          replyText = fallbackResponse.reply;
+          searchQueries = fallbackResponse.searchQueries;
+          searchChunks = fallbackResponse.searchSources;
+        }
+      } else {
         replyText = fallbackResponse.reply;
         searchQueries = fallbackResponse.searchQueries;
         searchChunks = fallbackResponse.searchSources;
       }
     }
 
-    if (!replyText) {
+    // Filter out raw system/meta agent error strings if Gemini ever returned one
+    if (
+      !replyText ||
+      replyText.toLowerCase().includes("empty objective") ||
+      replyText.toLowerCase().includes("no instructions on how to proceed")
+    ) {
       replyText = fallbackResponse.reply;
       searchQueries = fallbackResponse.searchQueries;
       searchChunks = fallbackResponse.searchSources;
@@ -776,8 +825,10 @@ function generateTomPeerSupportReply(query: string, gemMode: string = 'tom-core'
     };
   }
 
-  // 9. Greeting / Hello / Who are you
+  // 9. Greeting / Hello / Who are you / Empty or Meta Error Intercept
   if (
+    q.includes("empty objective") ||
+    q.includes("no instructions on how to proceed") ||
     q.includes("hello") ||
     q.includes("hi") ||
     q.includes("hey") ||
@@ -786,8 +837,7 @@ function generateTomPeerSupportReply(query: string, gemMode: string = 'tom-core'
     q === ""
   ) {
     return {
-      reply:
-        "I'm Tom. Sitting on the curb. No lectures, no hurry. What are you carrying today?",
+      reply: TOM_OPENING_STATEMENT.chatWelcome,
       emotion: "greeting",
       searchQueries: ["B.A.M.B.I. Peer Support"],
       searchSources: [
@@ -797,12 +847,12 @@ function generateTomPeerSupportReply(query: string, gemMode: string = 'tom-core'
     };
   }
 
-  // 10. General street-smart peer support (Tom Core Runtime style)
+  // 10. General street-smart peer support (Tom Core Runtime style with rotating curb reflections)
+  const rotatingReply = getRotatingTomReflection();
   return {
-    reply:
-      "That wound still owns real estate in your head. You've survived this before—different clothes, same monster. What does the next hour look like?",
+    reply: rotatingReply,
     emotion: "thoughtful",
-    searchQueries: ["B.A.M.B.I. Grounding"],
+    searchQueries: ["B.A.M.B.I. Grounding", "Tom Curb Mentorship"],
     searchSources: [
       { title: "Bambi Direct Line: 602-767-2147", uri: "tel:602-767-2147" },
       { title: "Pathway Recovery Dominoes", uri: "#products-for-sale" },
@@ -876,6 +926,7 @@ app.post("/api/sms", async (req, res) => {
 
     // Process turn with Tom AI or street-smart fallback
     let replyText = "";
+    const ai = getGeminiClient();
     if (!ai) {
       const fallback = generateTomPeerSupportReply(incomingMsg);
       replyText = fallback.reply;

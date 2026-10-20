@@ -30,6 +30,7 @@ import { generateClientTomReply } from '../services/tomBrainEngine';
 import { TOM_BOUNDARY_FAILURES } from '../data/tomRuntimeSpecification';
 import { BambiLearnerSection } from './BambiLearnerSection';
 import { OFFICIAL_TOM_GEM_URL, BAMBI_GEM_URL, GROWER_GEM_URL } from '../data/googleGemsData';
+import { TOM_OPENING_STATEMENT } from '../data/tomOpeningStatements';
 
 interface AIChatSectionProps {
   profile: CreatorProfile;
@@ -77,7 +78,7 @@ export const AIChatSection: React.FC<AIChatSectionProps> = ({
     {
       id: 'welcome-tom',
       sender: 'bot',
-      text: `I'm Tom. Sitting on the curb. No lectures, no hurry. What are you carrying today?`,
+      text: TOM_OPENING_STATEMENT.chatWelcome,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       emotion: 'greeting',
     },
@@ -107,7 +108,7 @@ export const AIChatSection: React.FC<AIChatSectionProps> = ({
     } else {
       setAvatarEmotion('happy');
       speak(
-        "Hey! I'm Tom, Bambi's peer support mentor. You don't have to carry this backpack alone. Tap the mic or type anytime, and I can also search Google for live resources.",
+        TOM_OPENING_STATEMENT.avatarTapGreeting,
         () => setAvatarEmotion('idle')
       );
     }
@@ -116,6 +117,20 @@ export const AIChatSection: React.FC<AIChatSectionProps> = ({
   const handleSendMessage = async (textToSend?: string) => {
     const query = (textToSend || inputMessage).trim();
     if (!query || isThinking) return;
+
+    // Loop Guard: Prevent sending the exact message Tom just said or empty meta-errors
+    const lastBotMsg = [...messages].reverse().find((m) => m.sender === 'bot');
+    if (lastBotMsg && lastBotMsg.text.trim().toLowerCase() === query.toLowerCase()) {
+      console.log('Suppressed echo loop message matching last bot response');
+      setInputMessage('');
+      return;
+    }
+
+    if (query.toLowerCase().includes("empty objective") || query.toLowerCase().includes("no instructions on how to proceed")) {
+      console.log('Suppressed raw agent prompt meta-string error');
+      setInputMessage('');
+      return;
+    }
 
     setInputMessage('');
     stopSpeaking();

@@ -59,6 +59,8 @@ export function useSpeech() {
   const recognitionRef = useRef<any>(null);
   const continuousModeRef = useRef(false);
   const onContinuousResultRef = useRef<((transcript: string) => void) | null>(null);
+  const isSpeakingRef = useRef(false);
+  const lastSpokenTextRef = useRef<string>('');
 
   useEffect(() => {
     continuousModeRef.current = continuousMode;
@@ -164,6 +166,9 @@ export function useSpeech() {
 
         if (!cleanText) return;
 
+        // Track last spoken text for echo cancellation filter
+        lastSpokenTextRef.current = cleanText.toLowerCase();
+
         const utterance = new SpeechSynthesisUtterance(cleanText);
         utteranceRef.current = utterance;
 
@@ -176,34 +181,50 @@ export function useSpeech() {
 
         utterance.onstart = () => {
           setIsSpeaking(true);
+          isSpeakingRef.current = true;
           startLipSyncAnimation();
-        };
 
-        const handleFinish = () => {
-          setIsSpeaking(false);
-          stopLipSyncAnimation();
-          if (onEndCallback) onEndCallback();
-
-          // If continuous voice conversation mode is enabled, resume listening after Tom stops speaking!
-          if (continuousModeRef.current && onContinuousResultRef.current) {
-            setTimeout(() => {
-              if (continuousModeRef.current && onContinuousResultRef.current) {
-                startVoiceInput(onContinuousResultRef.current);
-              }
-            }, 400);
+          // CRITICAL LOOP GUARD: Abort speech recognition immediately while Tom speaks
+          // so the microphone never records the device speakers!
+          if (recognitionRef.current) {
+            try {
+              recognitionRef.current.abort();
+            } catch (_) {}
+            setIsListening(false);
           }
         };
 
-        utterance.onend = handleFinish;
+        const handleFinish = (wasCancelled: boolean = false) => {
+          setIsSpeaking(false);
+          isSpeakingRef.current = false;
+          stopLipSyncAnimation();
+          if (onEndCallback) onEndCallback();
+
+          // If continuous voice conversation mode is enabled and was not cancelled,
+          // wait 900ms for room audio & echo to completely clear before opening mic!
+          if (!wasCancelled && continuousModeRef.current && onContinuousResultRef.current) {
+            setTimeout(() => {
+              if (continuousModeRef.current && onContinuousResultRef.current && !isSpeakingRef.current) {
+                startVoiceInput(onContinuousResultRef.current);
+              }
+            }, 900);
+          }
+        };
+
+        utterance.onend = () => handleFinish(false);
         utterance.onerror = (e) => {
-          console.warn('Speech synthesis warning:', e);
-          handleFinish();
+          const isInterrupt = e.error === 'interrupted' || e.error === 'canceled';
+          if (!isInterrupt) {
+            console.warn('Speech synthesis warning:', e);
+          }
+          handleFinish(isInterrupt);
         };
 
         window.speechSynthesis.speak(utterance);
       } catch (err) {
         console.error('TTS execution error:', err);
         setIsSpeaking(false);
+        isSpeakingRef.current = false;
         stopLipSyncAnimation();
       }
     },
@@ -215,6 +236,7 @@ export function useSpeech() {
       window.speechSynthesis.cancel();
     }
     setIsSpeaking(false);
+    isSpeakingRef.current = false;
     stopLipSyncAnimation();
   }, [stopLipSyncAnimation]);
 
@@ -230,6 +252,12 @@ export function useSpeech() {
   const startVoiceInput = useCallback(
     (onResult: (transcript: string) => void) => {
       if (typeof window === 'undefined') return;
+
+      // Do not open mic if Tom is currently speaking to prevent feedback loops
+      if (isSpeakingRef.current) {
+        return;
+      }
+
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -258,10 +286,19 @@ export function useSpeech() {
         };
 
         recognition.onresult = (event: any) => {
-          const transcript = event.results?.[0]?.[0]?.transcript;
-          if (transcript) {
-            onResult(transcript);
+          const rawTranscript = event.results?.[0]?.[0]?.transcript?.trim();
+          if (!rawTranscript) return;
+
+          // ECHO LOOP PREVENTION:
+          // If the microphone captured what Tom just spoke out of speakers, drop it
+          const tLow = rawTranscript.toLowerCase();
+          const lastSpoken = lastSpokenTextRef.current;
+          if (lastSpoken && (lastSpoken.includes(tLow) || (tLow.length > 15 && lastSpoken.slice(0, 30).includes(tLow.slice(0, 20))))) {
+            console.log('Filtered microphone loop echo of Tom’s own speech:', rawTranscript);
+            return;
           }
+
+          onResult(rawTranscript);
         };
 
         recognition.onerror = (event: any) => {
