@@ -22,14 +22,21 @@ import {
   CheckCircle2,
   Phone,
   Cpu,
+  BookOpen,
 } from 'lucide-react';
 import { AnimatedAvatar } from './AnimatedAvatar';
 import { ChatMessage, AvatarEmotion, ProductItem, CreatorProfile, SearchSource } from '../types';
 import { useSpeech } from '../hooks/useSpeech';
 import { generateClientTomReply } from '../services/tomBrainEngine';
-import { TOM_BOUNDARY_FAILURES } from '../data/tomRuntimeSpecification';
 import { BambiLearnerSection } from './BambiLearnerSection';
-import { OFFICIAL_TOM_GEM_URL, BAMBI_GEM_URL, GROWER_GEM_URL } from '../data/googleGemsData';
+import {
+  OFFICIAL_TOM_GEM_URL,
+  BAMBI_GEM_URL,
+  GROWER_GEM_URL,
+  MASTER_VAULT_GEM_URL,
+  NOTEBOOK_LLM_URL,
+  GemModeId,
+} from '../data/googleGemsData';
 import { TOM_OPENING_STATEMENT } from '../data/tomOpeningStatements';
 
 interface AIChatSectionProps {
@@ -48,7 +55,7 @@ export const AIChatSection: React.FC<AIChatSectionProps> = ({
   onClearExternalPrompt,
 }) => {
   const [activeTab, setActiveTab] = useState<'avatar-chat' | 'rsm-learner'>('avatar-chat');
-  const [activeGemMode, setActiveGemMode] = useState<'tom-core' | 'bambi-diagnostic' | 'the-grower'>('tom-core');
+  const [activeGemMode, setActiveGemMode] = useState<GemModeId>('tom-core');
   const [selectedBoundaryKey, setSelectedBoundaryKey] = useState<string>('relief');
   const [activeStageIndex, setActiveStageIndex] = useState<number>(0);
   const [inputMessage, setInputMessage] = useState('');
@@ -290,55 +297,86 @@ export const AIChatSection: React.FC<AIChatSectionProps> = ({
 
           {/* Right Header Area: Gem Mode Selector + Tab Switcher */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              {/* Gem 1 Tom, Gem 2 Bambi, Gem 3 Grower Selector */}
-              <div className="flex items-center gap-1 p-1 rounded-2xl bg-stone-200/70 dark:bg-stone-800/80 border border-stone-300/60 dark:border-stone-700 text-xs">
-                <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400 px-1.5 flex items-center gap-1">
+              {/* 4-Gem Architecture Selector */}
+              <div className="flex items-center gap-1 p-1 rounded-2xl bg-stone-200/70 dark:bg-stone-800/80 border border-stone-300/60 dark:border-stone-700 text-xs overflow-x-auto">
+                <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400 px-1.5 flex items-center gap-1 shrink-0">
                   <Sparkles className="w-3 h-3 text-amber-500" />
                   Gem:
                 </span>
                 <button
                   onClick={() => setActiveGemMode('tom-core')}
-                  className={`px-2 py-1 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-2 py-1 rounded-xl text-xs font-bold transition-all shrink-0 ${
                     activeGemMode === 'tom-core'
                       ? 'bg-emerald-700 text-white shadow-xs'
                       : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
                   }`}
-                  title="Site Gem 1: Tom (The Unbending Curb Mentor sitting in Phoenix, AZ)"
+                  title="Gem 1: Tom Core (The Unbending Curb Mentor)"
                 >
-                  #1 Tom
+                  #1 Tom Core
                 </button>
                 <button
-                  onClick={() => setActiveGemMode('bambi-diagnostic')}
-                  className={`px-2 py-1 rounded-xl text-xs font-bold transition-all ${
-                    activeGemMode === 'bambi-diagnostic'
+                  onClick={() => setActiveGemMode('bambi')}
+                  className={`px-2 py-1 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                    activeGemMode === 'bambi' || activeGemMode === 'bambi-diagnostic'
                       ? 'bg-amber-600 text-white shadow-xs'
                       : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
                   }`}
-                  title="Site Gem 2: Bambi (Process & Love / Support Gem - 5-Stage Survival Baseline Diagnostic)"
+                  title="Gem 2: B.A.M.B.I. (Process & Diagnostic Engine)"
                 >
-                  #2 Bambi
+                  #2 B.A.M.B.I.
                 </button>
                 <button
                   onClick={() => setActiveGemMode('the-grower')}
-                  className={`px-2 py-1 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-2 py-1 rounded-xl text-xs font-bold transition-all shrink-0 ${
                     activeGemMode === 'the-grower'
                       ? 'bg-purple-700 text-white shadow-xs'
                       : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
                   }`}
-                  title="Site Gem 3: Grower (Growth & Learning Engine)"
+                  title="Gem 3: The Grower (Adaptive Insight & Delivery Engine)"
                 >
-                  #3 Grower
+                  #3 The Grower
+                </button>
+                <button
+                  onClick={() => setActiveGemMode('master-vault')}
+                  className={`px-2 py-1 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                    activeGemMode === 'master-vault'
+                      ? 'bg-blue-700 text-white shadow-xs'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
+                  }`}
+                  title="Gem 4: Tom & B.A.M.B.I. Master Knowledge Vault (NotebookLM Update Engine for Gems 1, 2, and 3)"
+                >
+                  #4 Master Vault (NotebookLM)
                 </button>
 
                 <a
-                  href={activeGemMode === 'tom-core' ? OFFICIAL_TOM_GEM_URL : activeGemMode === 'bambi-diagnostic' ? BAMBI_GEM_URL : GROWER_GEM_URL}
+                  href={
+                    activeGemMode === 'tom-core'
+                      ? OFFICIAL_TOM_GEM_URL
+                      : activeGemMode === 'the-grower'
+                      ? GROWER_GEM_URL
+                      : activeGemMode === 'master-vault'
+                      ? MASTER_VAULT_GEM_URL
+                      : BAMBI_GEM_URL
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ml-1 p-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 transition-all flex items-center gap-1 font-bold text-[9px]"
-                  title="Open active Gem live on Google Gemini"
+                  className="ml-1 px-2 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 transition-all flex items-center gap-1 font-bold text-[10px] shrink-0"
+                  title={activeGemMode === 'master-vault' ? 'Open Master Knowledge Vault in NotebookLM' : 'Open active Gem directly'}
                 >
-                  <span>LIVE</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <span>{activeGemMode === 'master-vault' ? 'NotebookLM Vault' : 'Direct Gem'}</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+
+                <a
+                  href={NOTEBOOK_LLM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2 py-1 rounded-xl bg-blue-100 hover:bg-blue-200 dark:bg-blue-950/80 dark:hover:bg-blue-900 text-blue-900 dark:text-blue-300 border border-blue-300 dark:border-blue-800 transition-all flex items-center gap-1 font-bold text-[10px] shrink-0"
+                  title="Open Tom & B.A.M.B.I. Master Knowledge Vault in Google NotebookLM"
+                >
+                  <BookOpen className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+                  <span>NotebookLM</span>
+                  <ExternalLink className="w-2 h-2 text-blue-500" />
                 </a>
               </div>
 

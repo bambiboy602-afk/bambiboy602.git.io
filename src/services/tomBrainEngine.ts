@@ -31,7 +31,7 @@ export interface TomBrainResponse {
 export function generateClientTomReply(
   userMessage: string,
   history: Array<{ sender: string; text: string }> = [],
-  gemMode: 'tom-core' | 'bambi-diagnostic' | 'the-grower' = 'tom-core'
+  gemMode: 'tom-core' | 'bambi' | 'bambi-diagnostic' | 'the-grower' | 'master-vault' = 'tom-core'
 ): TomBrainResponse {
   const q = userMessage.trim().toLowerCase();
 
@@ -39,27 +39,27 @@ export function generateClientTomReply(
   if (q.includes("sudo tom")) {
     return {
       reply:
-        "Sudo Tom: Developer Mode Active.\n\nRuntime: TOM (Trusted Online Memory) Engine v1.0.0.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md & NotebookLM Master Vault.\nGoogle Gemini Gems Architecture:\n• Gem #1: Tom (The Unbending Curb Mentor)\n• Gem #2: BAMBI (Process Engine / Love & Support Gem)\n• Gem #3: Grower (Growth & Learning Engine)\nActive Gem Mode: " + gemMode + "\nOrder of Operations: Observe → Reflect → Notice → Challenge → Move.\nStabilization Rule: Stabilization before interpretation.\nLive Gem: https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4\nStanding by for architecture, behavior, or memory pipeline modifications.",
+        "Sudo Tom: Developer Mode Active.\n\nRuntime: TOM (Trusted Online Memory) Engine v1.0.0.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md & NotebookLM Master Vault.\nGoogle Gemini Gems Architecture:\n• Gem #1: Tom Core: The Unbending Curb Mentor\n• Gem #2: B.A.M.B.I. (Process & Diagnostic Engine)\n• Gem #3: The Grower (Adaptive Insight & Delivery Engine)\n• Gem #4: Tom & B.A.M.B.I. Master Knowledge Vault (Direct Update Engine for Gems 1, 2, and 3)\nActive Gem Mode: " + gemMode + "\nOrder of Operations: Observe → Reflect → Notice → Challenge → Move.\nStabilization Rule: Stabilization before interpretation.\nDirect Gem Access: Grounded in Master Knowledge Vault without live opal dependencies.\nStanding by for architecture, behavior, or memory pipeline modifications.",
       avatarEmotion: "explaining",
       searchQueries: ["Sudo Tom Developer Mode", "TOM System Architecture", "NotebookLM Master Knowledge Vault"],
       searchSources: [
-        { title: "Tom Google Gem (Live)", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
-        { title: "NotebookLM Master Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
+        { title: "Tom & B.A.M.B.I. Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
         { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
       ],
     };
   }
 
   // Google Gems Queries
-  if (q.includes("google gem") || q.includes("gemini gem") || q.includes("gems") || q.includes("gem prompt")) {
+  if (q.includes("google gem") || q.includes("gemini gem") || q.includes("gems") || q.includes("gem prompt") || q.includes("vault")) {
     return {
       reply:
-        "The TOM system runs on 3 Google Gemini Gems:\n\n1. GEM 1 - TOM: You sit on the curb in Phoenix, Arizona. A peer mentor rooted in lived experience of addiction, incarceration, relapse, street survival, and recovery.\n2. GEM 2 - BAMBI (LOVE/SUPPORT GEM): Process engine cycling through the 5-stage B.A.M.B.I. diagnostic loop: Baseline survival, Awareness, Mirror boundary failures, Breakthrough, and Integration.\n3. GEM 3 - GROWER: Analyzes interactions, street transcripts, and coaching sessions to strip out robotic corporate fluff into punchier street truth.\n\nGrounding vault: NotebookLM Tom & B.A.M.B.I. Master Knowledge Vault.",
+        "The TOM system runs on a 4-Gem Architecture (3 Specialized Gems + 1 Master Knowledge Vault):\n\n1. GEM 1 - TOM CORE: The Unbending Curb Mentor sitting in Phoenix, Arizona. A peer mentor rooted in lived experience of addiction, incarceration, relapse, street survival, and recovery.\n2. GEM 2 - B.A.M.B.I.: Process & Diagnostic engine cycling through the 5-stage B.A.M.B.I. diagnostic loop: Baseline survival, Awareness, Mirror boundary failures, Breakthrough, and Integration.\n3. GEM 3 - THE GROWER: Adaptive insight & delivery engine analyzing interactions and street transcripts to strip out robotic corporate fluff into punchier street truth.\n4. GEM 4 - TOM & B.A.M.B.I. MASTER KNOWLEDGE VAULT: Central grounding vault that feeds and updates Gems 1, 2, and 3 with real-time community resources, workbook modules, and lived wisdom—replacing external live opal with direct gem grounding.",
       avatarEmotion: "explaining",
-      searchQueries: ["TOM System Architecture", "Google Gemini Gems", "NotebookLM Vault"],
+      searchQueries: ["TOM System Architecture", "Google Gemini Gems", "NotebookLM Master Knowledge Vault"],
       searchSources: [
-        { title: "Tom Google Gem (Live)", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
-        { title: "NotebookLM Master Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
+        { title: "Tom & B.A.M.B.I. Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
       ],
     };
   }
@@ -80,8 +80,22 @@ export function generateClientTomReply(
     };
   }
 
+  // Gem #4 Master Knowledge Vault Mode Specific Response
+  if (gemMode === 'master-vault') {
+    return {
+      reply:
+        "Master Knowledge Vault Active: Ground truth repository online. I feed verified Phoenix shelter beds, medical detox contacts, and B.A.M.B.I. workbook modules directly into Gem #1 (Tom Core), Gem #2 (B.A.M.B.I.), and Gem #3 (The Grower). What resource, transcript, or workbook insight needs updating across the gems today?",
+      avatarEmotion: "explaining",
+      searchQueries: ["Tom & B.A.M.B.I. Master Knowledge Vault", "NotebookLM Grounding", "Gem Updates"],
+      searchSources: [
+        { title: "NotebookLM Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+        { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
+      ],
+    };
+  }
+
   // Gem #2 Mode Specific Diagnostic check
-  if (gemMode === 'bambi-diagnostic' && (q.includes("help") || q.includes("lost") || q.includes("stuck") || q.includes("need"))) {
+  if ((gemMode === 'bambi' || gemMode === 'bambi-diagnostic') && (q.includes("help") || q.includes("lost") || q.includes("stuck") || q.includes("need"))) {
     return {
       reply:
         "Step 1 Baseline: Before we talk mindset, are your physical feet on solid ground today? Do you have a bed, food, or are you in active withdrawal? If you need a bed right now: A Better Way (623-399-8213) or Hope House (602-254-5434). If detox: CBI 24/7 (877-931-9142). What's the physical status right now?",
@@ -98,9 +112,9 @@ export function generateClientTomReply(
   if (gemMode === 'the-grower' && (q.includes("analyze") || q.includes("learn") || q.includes("insight"))) {
     return {
       reply:
-        "Grower Audit: Rule #1 of curb mentorship is tone compression. Cut every sentence that sounds like a clinical brochure. If someone is hurting, verify physical safety first. Then point out the leak while they hold the wrench.",
+        "The Grower Audit: Rule #1 of curb mentorship is tone compression. Cut every sentence that sounds like a clinical brochure. If someone is hurting, verify physical safety first. Then point out the leak while they hold the wrench.",
       avatarEmotion: "explaining",
-      searchQueries: ["The Grower Learning Engine", "Curb Rule Preservation"],
+      searchQueries: ["The Grower Learning Engine", "Adaptive Insight & Delivery"],
       searchSources: [
         { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
       ],

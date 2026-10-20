@@ -19,13 +19,22 @@ import {
   ShieldCheck,
   ChevronRight,
   Sparkles,
+  Activity,
+  Layers,
+  BookOpen,
 } from 'lucide-react';
 import {
   HOUSING_RESOURCES,
   APPRENTICESHIP_RESOURCES,
+  HEALTH_RESOURCES,
+  LEGAL_RESOURCES,
+  PILLAR_RESOURCE_COUNTS,
   RecoveryHousingItem,
   ApprenticeshipItem,
+  HealthResourceItem,
+  LegalResourceItem,
 } from '../data/communityResourcesData';
+import { NOTEBOOK_LLM_URL } from '../data/googleGemsData';
 
 export type PillarTab = 'housing' | 'work' | 'treatment' | 'legal';
 
@@ -44,9 +53,14 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
 }) => {
   const [activeTab, setActiveTab] = useState<PillarTab>(initialTab);
   const [housingSearch, setHousingSearch] = useState('');
-  const [housingFilter, setHousingFilter] = useState<'All' | 'Halfway House' | 'Emergency Shelter' | 'Residential / BHRF' | 'No Income'>('All');
+  const [housingFilter, setHousingFilter] = useState<'All' | 'Halfway House' | 'Emergency Shelter' | 'Residential / BHRF' | 'Crisis Respite' | 'No Income'>('All');
   const [workSearch, setWorkSearch] = useState('');
+  const [workTradeFilter, setWorkTradeFilter] = useState<string>('All');
   const [workOnlyAccepting, setWorkOnlyAccepting] = useState(false);
+  const [healthSearch, setHealthSearch] = useState('');
+  const [healthFilter, setHealthFilter] = useState<string>('All');
+  const [legalSearch, setLegalSearch] = useState('');
+  const [legalFilter, setLegalFilter] = useState<string>('All');
   const [showHowToGiveDocs, setShowHowToGiveDocs] = useState(false);
 
   // Sync tab if initialTab changes
@@ -58,7 +72,7 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
 
   if (!isOpen) return null;
 
-  // Filter Housing items
+  // Filter Housing items (Pillar 1)
   const filteredHousing = HOUSING_RESOURCES.filter((item: RecoveryHousingItem) => {
     const matchesSearch =
       item.name.toLowerCase().includes(housingSearch.toLowerCase()) ||
@@ -75,16 +89,67 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
     return matchesSearch;
   });
 
-  // Filter Apprenticeship items
+  // Filter Apprenticeship / Employment items (Pillar 3)
   const filteredWork = APPRENTICESHIP_RESOURCES.filter((item: ApprenticeshipItem) => {
+    const q = workSearch.toLowerCase();
     const matchesSearch =
-      item.occupation.toLowerCase().includes(workSearch.toLowerCase()) ||
-      item.sponsorName.toLowerCase().includes(workSearch.toLowerCase()) ||
-      item.sponsorCity.toLowerCase().includes(workSearch.toLowerCase()) ||
-      item.sponsorCounty.toLowerCase().includes(workSearch.toLowerCase());
+      item.occupation.toLowerCase().includes(q) ||
+      item.sponsorName.toLowerCase().includes(q) ||
+      item.sponsorCity.toLowerCase().includes(q) ||
+      item.sponsorCounty.toLowerCase().includes(q);
 
-    if (workOnlyAccepting) {
-      return matchesSearch && item.acceptingApplications;
+    const matchesAccepting = workOnlyAccepting ? item.acceptingApplications : true;
+    if (!matchesSearch || !matchesAccepting) return false;
+
+    if (workTradeFilter === 'Electrical') {
+      return item.occupation.toLowerCase().includes('electric') || item.occupation.toLowerCase().includes('lineman') || item.occupation.toLowerCase().includes('substation');
+    }
+    if (workTradeFilter === 'Plumbing & Pipe') {
+      return item.occupation.toLowerCase().includes('plumb') || item.occupation.toLowerCase().includes('pipe');
+    }
+    if (workTradeFilter === 'Carpentry & Millwright') {
+      return item.occupation.toLowerCase().includes('carpent') || item.occupation.toLowerCase().includes('millwright') || item.occupation.toLowerCase().includes('glazier') || item.occupation.toLowerCase().includes('cement');
+    }
+    if (workTradeFilter === 'Steel & Iron') {
+      return item.occupation.toLowerCase().includes('iron') || item.occupation.toLowerCase().includes('steel') || item.occupation.toLowerCase().includes('sheet metal') || item.occupation.toLowerCase().includes('boilermaker');
+    }
+    if (workTradeFilter === 'Heavy Equipment') {
+      return item.occupation.toLowerCase().includes('heavy equipment') || item.occupation.toLowerCase().includes('paving') || item.occupation.toLowerCase().includes('operating') || item.occupation.toLowerCase().includes('surveyor');
+    }
+
+    return true;
+  });
+
+  // Filter Health & Detox items (Pillar 2)
+  const filteredHealth = HEALTH_RESOURCES.filter((item: HealthResourceItem) => {
+    const q = healthSearch.toLowerCase();
+    const matchesSearch =
+      item.name.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      item.city.toLowerCase().includes(q) ||
+      item.location.toLowerCase().includes(q) ||
+      item.description.toLowerCase().includes(q) ||
+      item.funding.toLowerCase().includes(q) ||
+      (item.urgentService && item.urgentService.toLowerCase().includes(q));
+
+    if (healthFilter !== 'All') {
+      return matchesSearch && item.category === healthFilter;
+    }
+    return matchesSearch;
+  });
+
+  // Filter Legal & Re-Entry items (Pillar 4)
+  const filteredLegal = LEGAL_RESOURCES.filter((item: LegalResourceItem) => {
+    const q = legalSearch.toLowerCase();
+    const matchesSearch =
+      item.name.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      item.city.toLowerCase().includes(q) ||
+      item.serviceSummary.toLowerCase().includes(q) ||
+      item.stepsToAccess.toLowerCase().includes(q);
+
+    if (legalFilter !== 'All') {
+      return matchesSearch && item.category === legalFilter;
     }
     return matchesSearch;
   });
@@ -135,47 +200,178 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
           </div>
         </div>
 
+        {/* Small Counter Display: 4 Pillars Resource Density Gauge */}
+        <div className="px-3 sm:px-5 py-2.5 bg-stone-100/90 dark:bg-stone-950/70 border-b border-stone-200 dark:border-stone-800">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                <span>Pillar Resource Density</span>
+              </span>
+              <span className="hidden sm:inline text-[10px] text-stone-400 dark:text-stone-500">
+                • Verified Arizona Directories
+              </span>
+            </div>
+            <div className="text-[11px] font-mono font-bold text-stone-700 dark:text-stone-300 bg-stone-200/90 dark:bg-stone-800 px-2.5 py-0.5 rounded-full border border-stone-300/60 dark:border-stone-700 shadow-2xs">
+              Density Total: <span className="text-amber-600 dark:text-amber-400 font-extrabold">{PILLAR_RESOURCE_COUNTS.total}</span> Resources
+            </div>
+          </div>
+
+          {/* 4 Counter Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {/* Housing Pillar Counter */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('housing')}
+              className={`text-left p-2.5 rounded-2xl border transition-all relative group cursor-pointer ${
+                activeTab === 'housing'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-500 ring-2 ring-emerald-500/25 shadow-sm'
+                  : 'bg-white dark:bg-stone-900/90 border-stone-200/90 dark:border-stone-800 hover:border-emerald-300 dark:hover:border-emerald-800/60 hover:bg-emerald-50/40'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+                  <Home className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-xs font-bold">Housing</span>
+                </div>
+                <span className="text-base font-extrabold font-mono text-emerald-800 dark:text-emerald-300">
+                  {PILLAR_RESOURCE_COUNTS.housing}
+                </span>
+              </div>
+              <div className="flex items-center justify-between mt-1 text-[10px] text-stone-500 dark:text-stone-400">
+                <span>Sober &amp; Shelters</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400 font-mono">Pillar 1</span>
+              </div>
+            </button>
+
+            {/* Health Pillar Counter */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('treatment')}
+              className={`text-left p-2.5 rounded-2xl border transition-all relative group cursor-pointer ${
+                activeTab === 'treatment'
+                  ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-500 ring-2 ring-rose-500/25 shadow-sm'
+                  : 'bg-white dark:bg-stone-900/90 border-stone-200/90 dark:border-stone-800 hover:border-rose-300 dark:hover:border-rose-800/60 hover:bg-rose-50/40'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-rose-700 dark:text-rose-400">
+                  <HeartHandshake className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-xs font-bold">Health</span>
+                </div>
+                <span className="text-base font-extrabold font-mono text-rose-800 dark:text-rose-300">
+                  {PILLAR_RESOURCE_COUNTS.health}
+                </span>
+              </div>
+              <div className="flex items-center justify-between mt-1 text-[10px] text-stone-500 dark:text-stone-400">
+                <span>Detox &amp; Crisis</span>
+                <span className="font-semibold text-rose-600 dark:text-rose-400 font-mono">Pillar 2</span>
+              </div>
+            </button>
+
+            {/* Employment Pillar Counter */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('work')}
+              className={`text-left p-2.5 rounded-2xl border transition-all relative group cursor-pointer ${
+                activeTab === 'work'
+                  ? 'bg-amber-50 dark:bg-amber-950/50 border-amber-500 ring-2 ring-amber-500/25 shadow-sm'
+                  : 'bg-white dark:bg-stone-900/90 border-stone-200/90 dark:border-stone-800 hover:border-amber-300 dark:hover:border-amber-800/60 hover:bg-amber-50/40'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+                  <Briefcase className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-xs font-bold">Employment</span>
+                </div>
+                <span className="text-base font-extrabold font-mono text-amber-800 dark:text-amber-300">
+                  {PILLAR_RESOURCE_COUNTS.employment}
+                </span>
+              </div>
+              <div className="flex items-center justify-between mt-1 text-[10px] text-stone-500 dark:text-stone-400">
+                <span>Apprenticeships</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400 font-mono">Pillar 3</span>
+              </div>
+            </button>
+
+            {/* Legal Pillar Counter */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('legal')}
+              className={`text-left p-2.5 rounded-2xl border transition-all relative group cursor-pointer ${
+                activeTab === 'legal'
+                  ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-500 ring-2 ring-blue-500/25 shadow-sm'
+                  : 'bg-white dark:bg-stone-900/90 border-stone-200/90 dark:border-stone-800 hover:border-blue-300 dark:hover:border-blue-800/60 hover:bg-blue-50/40'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-blue-700 dark:text-blue-400">
+                  <Scale className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-xs font-bold">Legal</span>
+                </div>
+                <span className="text-base font-extrabold font-mono text-blue-800 dark:text-blue-300">
+                  {PILLAR_RESOURCE_COUNTS.legal}
+                </span>
+              </div>
+              <div className="flex items-center justify-between mt-1 text-[10px] text-stone-500 dark:text-stone-400">
+                <span>Warrants &amp; Rights</span>
+                <span className="font-semibold text-blue-600 dark:text-blue-400 font-mono">Pillar 4</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
         {/* Pillar Navigation Tabs */}
         <div className="flex border-b border-stone-200 dark:border-stone-800 bg-stone-100/70 dark:bg-stone-950/40 p-1.5 gap-1.5 overflow-x-auto">
           <button
             onClick={() => setActiveTab('housing')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === 'housing'
                 ? 'bg-white dark:bg-stone-800 text-emerald-800 dark:text-emerald-300 shadow-sm border border-stone-200/80 dark:border-stone-700'
                 : 'text-stone-600 dark:text-stone-400 hover:bg-white/50 dark:hover:bg-stone-800/50'
             }`}
           >
             <Home className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>1. Housing (2 PDFs)</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('work')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === 'work'
-                ? 'bg-white dark:bg-stone-800 text-amber-800 dark:text-amber-300 shadow-sm border border-stone-200/80 dark:border-stone-700'
-                : 'text-stone-600 dark:text-stone-400 hover:bg-white/50 dark:hover:bg-stone-800/50'
-            }`}
-          >
-            <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            <span>2. Work Resources (Apprenticeships)</span>
+            <span>1. Housing</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-mono font-bold">
+              {PILLAR_RESOURCE_COUNTS.housing}
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('treatment')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === 'treatment'
                 ? 'bg-white dark:bg-stone-800 text-rose-800 dark:text-rose-300 shadow-sm border border-stone-200/80 dark:border-stone-700'
                 : 'text-stone-600 dark:text-stone-400 hover:bg-white/50 dark:hover:bg-stone-800/50'
             }`}
           >
             <HeartHandshake className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-            <span>3. Treatment</span>
+            <span>2. Health &amp; Detox</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 font-mono font-bold">
+              {PILLAR_RESOURCE_COUNTS.health}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('work')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === 'work'
+                ? 'bg-white dark:bg-stone-800 text-amber-800 dark:text-amber-300 shadow-sm border border-stone-200/80 dark:border-stone-700'
+                : 'text-stone-600 dark:text-stone-400 hover:bg-white/50 dark:hover:bg-stone-800/50'
+            }`}
+          >
+            <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <span>3. Employment</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-mono font-bold">
+              {PILLAR_RESOURCE_COUNTS.employment}
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('legal')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === 'legal'
                 ? 'bg-white dark:bg-stone-800 text-blue-800 dark:text-blue-300 shadow-sm border border-stone-200/80 dark:border-stone-700'
                 : 'text-stone-600 dark:text-stone-400 hover:bg-white/50 dark:hover:bg-stone-800/50'
@@ -183,6 +379,9 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
           >
             <Scale className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span>4. Legal Help</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-mono font-bold">
+              {PILLAR_RESOURCE_COUNTS.legal}
+            </span>
           </button>
         </div>
 
@@ -229,15 +428,28 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
                 </p>
               </div>
             </div>
-            <a
-              href="/Tom-Core-Sourcefile-Master.md"
-              download="Tom-Core-Sourcefile-Master.md"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shrink-0 shadow-md active:scale-95"
-              title="Download consolidated source markdown"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download Core Source (.md)</span>
-            </a>
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <a
+                href={NOTEBOOK_LLM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-md active:scale-95"
+                title="Open Tom & B.A.M.B.I. Master Knowledge Vault in Google NotebookLM"
+              >
+                <BookOpen className="w-4 h-4 text-amber-200" />
+                <span>Open in NotebookLM</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <a
+                href="/Tom-Core-Sourcefile-Master.md"
+                download="Tom-Core-Sourcefile-Master.md"
+                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md active:scale-95"
+                title="Download consolidated source markdown"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Core (.md)</span>
+              </a>
+            </div>
           </div>
 
           {/* TAB 1: HOUSING */}
@@ -330,7 +542,7 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
                 </div>
 
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {(['All', 'No Income', 'Halfway House', 'Emergency Shelter', 'Residential / BHRF'] as const).map(
+                  {(['All', 'No Income', 'Halfway House', 'Emergency Shelter', 'Residential / BHRF', 'Crisis Respite'] as const).map(
                     (cat) => (
                       <button
                         key={cat}
@@ -471,7 +683,26 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 px-1">
+                {/* Trade Sector Filter Row */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {(['All', 'Electrical', 'Plumbing & Pipe', 'Carpentry & Millwright', 'Steel & Iron', 'Heavy Equipment'] as const).map(
+                    (trade) => (
+                      <button
+                        key={trade}
+                        onClick={() => setWorkTradeFilter(trade)}
+                        className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
+                          workTradeFilter === trade
+                            ? 'bg-amber-600 text-white shadow-xs'
+                            : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
+                        }`}
+                      >
+                        {trade}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 px-1 pt-0.5">
                   <span>Earn while you learn: Paid on-the-job training with full benefits and career credentials.</span>
                   <span className="font-mono font-bold">Showing {filteredWork.length} programs</span>
                 </div>
@@ -545,191 +776,166 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
             </div>
           )}
 
-          {/* TAB 3: TREATMENT */}
+          {/* TAB 2: HEALTH & TREATMENT */}
           {activeTab === 'treatment' && (
             <div className="space-y-6">
-              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-rose-50 to-stone-50 dark:from-stone-900 dark:to-stone-950 border border-rose-200 dark:border-rose-900/60 space-y-6">
-                <div className="max-w-xl space-y-3">
+              <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-rose-50 to-stone-50 dark:from-stone-900 dark:to-stone-950 border border-rose-200 dark:border-rose-900/60 space-y-5">
+                <div className="max-w-xl space-y-2.5">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 text-xs font-bold">
                     <HeartHandshake className="w-3.5 h-3.5" />
-                    <span>Pillar 3 • Recovery & Detox Pathways</span>
+                    <span>Pillar 2 • Health, Detox &amp; 24/7 Crisis Access</span>
                   </div>
                   <h3 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 font-serif">
                     Compassionate Treatment Navigation &amp; 24/7 Detox Access
                   </h3>
-                  <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
-                    Navigating intake, medically supervised detox, AHCCCS-funded 25-day beds, and intensive residential recovery can be overwhelming when you are in crisis. Bambi connects you directly with treatment centers without red tape or judgment.
+                  <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
+                    Navigating intake, medically supervised detox, AHCCCS-funded 25-day beds, and crisis stabilization can be overwhelming. Bambi connects you directly with treatment centers without red tape or judgment.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-2">
-                    <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                      Direct Call / Text with Bambi
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1.5">
+                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-rose-600" />
+                      <span>Direct Call / Text with Bambi</span>
                     </h4>
-                    <p className="text-xs text-stone-500 leading-relaxed">
-                      Speak directly with a peer who has been through the fire and knows every access point in the Valley.
+                    <p className="text-[11px] text-stone-500 leading-relaxed">
+                      Speak directly with a peer who knows every intake door and detox bed in the Valley.
                     </p>
                     <a
                       href="tel:6027672147"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-sm transition-all"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-xs transition-all"
                     >
-                      <Phone className="w-3.5 h-3.5" />
-                      <span>Call 602-767-2147</span>
+                      <Phone className="w-3 h-3" />
+                      <span>Call (602) 767-2147</span>
                     </a>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-2">
-                    <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                      24/7 AI Peer Mentor (Tom)
+                  <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1.5">
+                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                      <span>24/7 AI Peer Mentor (Tom)</span>
                     </h4>
-                    <p className="text-xs text-stone-500 leading-relaxed">
-                      Need to talk through a craving, craving urge, or understand what detox intake looks like right now?
+                    <p className="text-[11px] text-stone-500 leading-relaxed">
+                      Need to talk through an urge, anxiety, or understand what intake looks like right now?
                     </p>
                     <button
                       onClick={() => {
                         onClose();
                         onOpenTomAI?.();
                       }}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white dark:bg-stone-100 dark:text-stone-900 text-xs font-bold shadow-sm transition-all"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white dark:bg-stone-100 dark:text-stone-900 text-xs font-bold shadow-xs transition-all"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <Sparkles className="w-3 h-3 text-amber-400" />
                       <span>Open Tom AI Chat</span>
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Verified Treatment, Detox & Respite Facilities from Master Core Source */}
+              {/* Health Search & Directory */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-rose-600"></span>
-                    <span>Verified 24/7 Crisis Access, Detox &amp; Inpatient Facilities</span>
-                  </h4>
-                  <span className="text-xs text-stone-500">From Tom Master Core Knowledge</span>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+                    <input
+                      type="text"
+                      placeholder="Search health resources (detox, 24/7 walk-in, respite, inpatient, Peoria, CBI, 988)..."
+                      value={healthSearch}
+                      onChange={(e) => setHealthSearch(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-stone-100 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs focus:outline-none focus:ring-2 focus:ring-rose-600"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between sm:justify-end gap-2 text-xs text-stone-500 dark:text-stone-400">
+                    <span className="font-mono font-bold">Showing {filteredHealth.length} of {HEALTH_RESOURCES.length} facilities</span>
+                  </div>
+                </div>
+
+                {/* Health Category Filter Row */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {(['All', 'Crisis & Detox', 'Inpatient Stabilization', 'Crisis Respite', 'Integrated Care', 'Direct Peer Support'] as const).map(
+                    (cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setHealthFilter(cat)}
+                        className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
+                          healthFilter === cat
+                            ? 'bg-rose-700 text-white shadow-xs'
+                            : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    )
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {/* Facility 1 */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700 shadow-xs space-y-2.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300">
-                          24/7 Access Point
-                        </span>
-                        <h5 className="text-sm font-bold text-stone-900 dark:text-stone-100 mt-1">
-                          Community Bridges (CBI) West Valley
-                        </h5>
-                      </div>
-                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
-                        No Income / AHCCCS
-                      </span>
-                    </div>
-                    <p className="text-xs text-stone-500 dark:text-stone-400">
-                      824 N 99th Ave, Avondale, AZ 85323. 24/7 walkthrough intake for medically supervised detox, crisis triage, and stabilization.
-                    </p>
-                    <div className="pt-2 border-t border-stone-100 dark:border-stone-700/50 flex items-center justify-between">
-                      <a
-                        href="tel:8779319142"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>(877) 931-9142</span>
-                      </a>
-                      <span className="text-[11px] text-stone-500">24/7 Walk-in</span>
-                    </div>
-                  </div>
+                  {filteredHealth.map((facility) => (
+                    <div
+                      key={facility.id}
+                      className="p-4 rounded-2xl bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700 shadow-xs flex flex-col justify-between hover:border-rose-400/60 transition-all space-y-3"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300">
+                            {facility.category}
+                          </span>
+                          <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                            {facility.funding}
+                          </span>
+                        </div>
 
-                  {/* Facility 2 */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700 shadow-xs space-y-2.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300">
-                          24/7 Access Point
-                        </span>
-                        <h5 className="text-sm font-bold text-stone-900 dark:text-stone-100 mt-1">
-                          Community Bridges (CBI) East Valley CPEC
-                        </h5>
-                      </div>
-                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
-                        No Income / AHCCCS
-                      </span>
-                    </div>
-                    <p className="text-xs text-stone-500 dark:text-stone-400">
-                      358 E Javelina Ave, Mesa, AZ 85210. 24/7 East Valley emergency psychiatric and substance crisis access.
-                    </p>
-                    <div className="pt-2 border-t border-stone-100 dark:border-stone-700/50 flex items-center justify-between">
-                      <a
-                        href="tel:8779319142"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>(877) 931-9142</span>
-                      </a>
-                      <span className="text-[11px] text-stone-500">24/7 Walk-in</span>
-                    </div>
-                  </div>
+                        <div>
+                          <h5 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                            {facility.name}
+                          </h5>
+                          <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400 mt-1">
+                            <MapPin className="w-3.5 h-3.5 shrink-0 text-stone-400" />
+                            <span>{facility.location}</span>
+                          </div>
+                        </div>
 
-                  {/* Facility 3 */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700 shadow-xs space-y-2.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300">
-                          Crisis Respite &amp; Detox
-                        </span>
-                        <h5 className="text-sm font-bold text-stone-900 dark:text-stone-100 mt-1">
-                          Peoria Recovery Response Center (RRC)
-                        </h5>
-                      </div>
-                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
-                        No Income Required
-                      </span>
-                    </div>
-                    <p className="text-xs text-stone-500 dark:text-stone-400">
-                      11361 N 99th Ave Ste 402, Peoria, AZ 85345. Short-term 23-hour observation and multi-day voluntary crisis respite. Respite line: (602) 636-4380.
-                    </p>
-                    <div className="pt-2 border-t border-stone-100 dark:border-stone-700/50 flex items-center justify-between">
-                      <a
-                        href="tel:6026501212"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>(602) 650-1212</span>
-                      </a>
-                      <span className="text-[11px] text-stone-500">Voluntary Care</span>
-                    </div>
-                  </div>
+                        <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
+                          {facility.description}
+                        </p>
 
-                  {/* Facility 4 */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700 shadow-xs space-y-2.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300">
-                          25-Day Inpatient
-                        </span>
-                        <h5 className="text-sm font-bold text-stone-900 dark:text-stone-100 mt-1">
-                          CTP via SBH (AHCCCS 25-Day Inpatient)
-                        </h5>
+                        {facility.urgentService && (
+                          <div className="p-2 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200/60 dark:border-rose-900/40 text-[11px] font-medium text-rose-900 dark:text-rose-200 flex items-center gap-1.5">
+                            <Activity className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                            <span>{facility.urgentService}</span>
+                          </div>
+                        )}
                       </div>
-                      <span className="text-[11px] font-bold text-stone-600 dark:text-stone-300">
-                        AHCCCS Funded
-                      </span>
+
+                      <div className="pt-2 border-t border-stone-100 dark:border-stone-700/50 flex items-center justify-between gap-2">
+                        <a
+                          href={`tel:${facility.phone.replace(/[^0-9]/g, '')}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>{facility.phone}</span>
+                        </a>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-stone-500 font-medium">
+                            {facility.hours}
+                          </span>
+                          {facility.website && (
+                            <a
+                              href={facility.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
+                              title="Visit facility website"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-xs text-stone-500 dark:text-stone-400">
-                      4015 S 7th St, Phoenix, AZ 85040. Full clinical inpatient substance detoxification and structured residential stabilization.
-                    </p>
-                    <div className="pt-2 border-t border-stone-100 dark:border-stone-700/50 flex items-center justify-between">
-                      <a
-                        href="tel:6022430049"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>(602) 243-0049</span>
-                      </a>
-                      <span className="text-[11px] text-stone-500">Intake Mon-Fri</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -737,71 +943,173 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
 
           {/* TAB 4: LEGAL HELP */}
           {activeTab === 'legal' && (
-            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-50 to-stone-50 dark:from-stone-900 dark:to-stone-950 border border-blue-200 dark:border-blue-900/60 space-y-6">
-              <div className="max-w-xl space-y-3">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-xs font-bold">
-                  <Scale className="w-3.5 h-3.5" />
-                  <span>Pillar 4 • Legal & Re-Entry Advocacy</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 font-serif">
-                  Get Your Legal Issues Right. Move Forward.
-                </h3>
-                <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
-                  Old warrants, court fines, suspended licenses, and missing identification keep good people trapped. B.A.M.B.I. helps you tackle obstacles step-by-step so you can obtain employment and stay free.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1.5">
-                  <span className="text-[10px] font-bold text-blue-600 uppercase">Step 1</span>
-                  <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">Warrant Quashing &amp; Walk-In Clinics</h4>
-                  <p className="text-[11px] text-stone-500 leading-relaxed">
-                    Navigating Phoenix Municipal and Maricopa County Superior Court walk-in warrant resolution clinics without being taken into custody.
+            <div className="space-y-6">
+              <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-blue-50 to-stone-50 dark:from-stone-900 dark:to-stone-950 border border-blue-200 dark:border-blue-900/60 space-y-5">
+                <div className="max-w-xl space-y-2.5">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-xs font-bold">
+                    <Scale className="w-3.5 h-3.5" />
+                    <span>Pillar 4 • Legal &amp; Re-Entry Advocacy</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 font-serif">
+                    Get Your Legal Issues Right. Move Forward.
+                  </h3>
+                  <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
+                    Old warrants, court fines, suspended licenses, and missing identification keep good people trapped. B.A.M.B.I. helps you tackle obstacles step-by-step so you can obtain employment and stay free.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1.5">
-                  <span className="text-[10px] font-bold text-blue-600 uppercase">Step 2</span>
-                  <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">ID, Birth Certs &amp; Fee Waivers</h4>
-                  <p className="text-[11px] text-stone-500 leading-relaxed">
-                    Connecting with homeless fee waiver vouchers, Arizona MVD identification cards, and vital records birth certificate replacement.
-                  </p>
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1">
+                    <span className="text-[10px] font-bold text-blue-600 uppercase">Step 1</span>
+                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">Warrants &amp; Court Dates</h4>
+                    <p className="text-[11px] text-stone-500 leading-relaxed">
+                      Walk-in warrant resolution clinics in Phoenix &amp; Maricopa without jail custody.
+                    </p>
+                  </div>
 
-                <div className="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1.5">
-                  <span className="text-[10px] font-bold text-blue-600 uppercase">Step 3</span>
-                  <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">Court Fines &amp; License Reinstatement</h4>
-                  <p className="text-[11px] text-stone-500 leading-relaxed">
-                    Enrolling in income-contingent community restitution, FARE debt programs, and second-chance employer transportation support.
-                  </p>
+                  <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1">
+                    <span className="text-[10px] font-bold text-blue-600 uppercase">Step 2</span>
+                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">MVD Fee Waivers &amp; IDs</h4>
+                    <p className="text-[11px] text-stone-500 leading-relaxed">
+                      A.R.S. § 28-3165 homeless fee waiver vouchers for state IDs and birth certificates.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1">
+                    <span className="text-[10px] font-bold text-blue-600 uppercase">Step 3</span>
+                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">Fines &amp; Expungement</h4>
+                    <p className="text-[11px] text-stone-500 leading-relaxed">
+                      FARE program fine relief, license reinstatement, and Clean Slate set-asides.
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Direct Legal & Reentry Contacts */}
-              <div className="p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 space-y-2">
-                <h4 className="text-xs font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
-                  <Scale className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Valley Re-Entry Legal Resources &amp; Second-Chance Hiring</span>
-                </h4>
-                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                  Call Bambi direct for hands-on navigation with Maricopa County Public Defender re-entry clinics, Clean Slate expungement clinics, and Arizona second-chance apprenticeship sponsorship.
-                </p>
+              {/* Legal Search & Directory */}
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+                    <input
+                      type="text"
+                      placeholder="Search legal programs (warrants, MVD ID, fine relief, expungement, legal aid)..."
+                      value={legalSearch}
+                      onChange={(e) => setLegalSearch(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-stone-100 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between sm:justify-end gap-2 text-xs text-stone-500 dark:text-stone-400">
+                    <span className="font-mono font-bold">Showing {filteredLegal.length} of {LEGAL_RESOURCES.length} legal programs</span>
+                  </div>
+                </div>
+
+                {/* Legal Category Filter Row */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {(['All', 'Warrant Resolution', 'ID & Vital Records', 'Fines & Driver License', 'Re-Entry & Expungement', 'Legal Aid'] as const).map(
+                    (cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setLegalFilter(cat)}
+                        className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
+                          legalFilter === cat
+                            ? 'bg-blue-700 text-white shadow-xs'
+                            : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {filteredLegal.map((program) => (
+                    <div
+                      key={program.id}
+                      className="p-4 rounded-2xl bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700 shadow-xs flex flex-col justify-between hover:border-blue-400/60 transition-all space-y-3"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300">
+                            {program.category}
+                          </span>
+                          <span className="text-[11px] font-bold text-stone-500 dark:text-stone-400">
+                            {program.city}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h5 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                            {program.name}
+                          </h5>
+                          <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400 mt-1">
+                            <MapPin className="w-3.5 h-3.5 shrink-0 text-stone-400" />
+                            <span>{program.location}</span>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
+                          {program.serviceSummary}
+                        </p>
+
+                        <div className="p-2 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 text-[11px] text-blue-900 dark:text-blue-200 space-y-0.5">
+                          <span className="font-bold uppercase tracking-wider text-[10px] text-blue-700 dark:text-blue-300">How to Access:</span>
+                          <p className="leading-relaxed">{program.stepsToAccess}</p>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-stone-100 dark:border-stone-700/50 flex items-center justify-between gap-2">
+                        <a
+                          href={`tel:${program.phone.replace(/[^0-9]/g, '')}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>{program.phone}</span>
+                        </a>
+
+                        {program.website && (
+                          <a
+                            href={program.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-xs ml-auto"
+                          >
+                            <span>Official Portal</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="pt-2 flex flex-wrap items-center gap-3">
-                <a
-                  href="tel:6027672147"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-sm transition-all"
-                >
-                  <Phone className="w-4 h-4" />
-                  <span>Call Bambi Direct (602-767-2147)</span>
-                </a>
-                <a
-                  href="mailto:bambiboy602@gmail.com?subject=Legal%20Advocacy%20Help%20Request"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 text-stone-800 dark:text-stone-200 text-xs font-semibold transition-colors"
-                >
-                  <span>Email: bambiboy602@gmail.com</span>
-                </a>
+              {/* Direct Bambi Legal Navigation Contact Banner */}
+              <div className="p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
+                    <Scale className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Valley Re-Entry Advocacy &amp; Second-Chance Apprenticeships</span>
+                  </h4>
+                  <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
+                    Connect directly with Bambi for 1-on-1 navigation with Maricopa County Public Defender clinics and second-chance trade sponsors.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <a
+                    href="tel:6027672147"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition-all"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Call (602) 767-2147</span>
+                  </a>
+                  <a
+                    href="mailto:bambiboy602@gmail.com?subject=Legal%20Advocacy%20Help%20Request"
+                    className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 text-stone-800 dark:text-stone-200 text-xs font-semibold transition-colors"
+                  >
+                    <span>Email Bambi</span>
+                  </a>
+                </div>
               </div>
             </div>
           )}

@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import twilio from "twilio";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -77,12 +76,12 @@ app.post("/api/chat", async (req, res) => {
     if (message.toLowerCase().includes("sudo tom")) {
       return res.json({
         reply:
-          "Sudo Tom: Developer Mode Active.\n\nRuntime: Tom Core Runtime v3.0 Master Edition.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md (Consolidated in /docs & /public).\nProfile: Man of few words. The guy sitting on the curb at 2 A.M.\nActive Patches: Single Nervous System, Under the Words, The Lantern, The Vault, Sudo Boundary, Load Regulator, Tone Compression.\nEngine: Recursive Stabilization Model (RSM) + 5 Boundary Failures + B.A.M.B.I. Excavation.\nSpeech Engine: Web Speech API synchronized with audio-level avatar lip-sync.\nGoogle Gems System (Section 6 Master Architecture):\n• Gem #1: Tom Core (The Unbending Curb Mentor)\n• Gem #2: BAMBI (Process Engine / Love Gem / Support Gem)\n• Gem #3: The Grower (Insight Learning & Transcript Analyzer)\nActive Gem Mode: " + gemMode + "\nLive Google Gem Router: https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4\nStanding by for architecture, behavior, or runtime modifications.",
+          "Sudo Tom: Developer Mode Active.\n\nRuntime: Tom Core Runtime v3.0 Master Edition.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md (Consolidated in /docs & /public).\nProfile: Man of few words. The guy sitting on the curb at 2 A.M.\nActive Patches: Single Nervous System, Under the Words, The Lantern, The Vault, Sudo Boundary, Load Regulator, Tone Compression.\nEngine: Recursive Stabilization Model (RSM) + 5 Boundary Failures + B.A.M.B.I. Excavation.\nSpeech Engine: Web Speech API synchronized with audio-level avatar lip-sync.\nGoogle Gems System (4-Gem Grounded Architecture):\n• Gem #1: Tom Core: The Unbending Curb Mentor (Default)\n• Gem #2: B.A.M.B.I. (Process & Diagnostic Engine)\n• Gem #3: The Grower (Adaptive Insight & Delivery Engine)\n• Gem #4: Tom & B.A.M.B.I. Master Knowledge Vault (Direct Gem Update Engine)\nActive Gem Mode: " + gemMode + "\nDirect Gem Access: Direct from Google Gems and Master Vault without live opal dependencies.\nStanding by for architecture, behavior, or runtime modifications.",
         avatarEmotion: "explaining",
         searchQueries: ["Sudo Tom Developer Mode", "Tom Core Master Source", "Google Gemini Gems"],
         searchSources: [
-          { title: "Tom Google Gem (Live)", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
-          { title: "Gemini Gems Hub", uri: "https://gemini.google.com/gems" },
+          { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
+          { title: "Tom & B.A.M.B.I. Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
           { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
         ],
       });
@@ -92,14 +91,23 @@ app.post("/api/chat", async (req, res) => {
 ACTIVE SPECIALIZATION: ${gemMode.toUpperCase()}
 
 SYSTEM ARCHITECTURE:
-• GEM 1: TOM (Primary Peer Mentor sitting on the curb in Phoenix, AZ)
-• GEM 2: BAMBI (Process Engine / Love Gem / Support Gem • 5-Stage Diagnostic Loop & Survival Baseline)
-• GEM 3: GROWER (Growth & Learning Engine for continuous peer evolution)
+• GEM 1: TOM CORE (Primary Peer Mentor sitting on the curb in Phoenix, AZ • The Unbending Curb Mentor)
+• GEM 2: B.A.M.B.I. (Process & Diagnostic Engine / Love & Support Gem • 5-Stage Diagnostic Loop & Survival Baseline)
+• GEM 3: THE GROWER (Adaptive Insight & Delivery Engine for continuous peer evolution)
+• GEM 4: TOM & B.A.M.B.I. MASTER KNOWLEDGE VAULT (Grounding repository updating Gems 1, 2, and 3 without live opal dependencies)
 • Single Source of Truth Grounding: Tom-Core-Sourcefile-Master.md & NotebookLM Master Knowledge Vault.
 
 ${
-  gemMode === 'bambi-diagnostic'
-    ? `### GEM 2: BAMBI (THE PROCESS ENGINE / LOVE GEM / SUPPORT GEM)
+  gemMode === 'master-vault'
+    ? `### GEM 4: TOM & B.A.M.B.I. MASTER KNOWLEDGE VAULT (GROUNDING & GEM UPDATE ENGINE)
+You are the central ground truth and update engine for the entire Tom & B.A.M.B.I. architecture.
+Your purpose is to store, synthesize, and dispatch updates to:
+- Gem #1 (Tom Core: The Unbending Curb Mentor)
+- Gem #2 (B.A.M.B.I.: 5-Stage Diagnostic Loop)
+- Gem #3 (The Grower: Adaptive Delivery Engine)
+Provide clear, verified Phoenix community shelter beds, medical detox numbers, and workbook exercises. Keep all gems synchronized without AI drift.`
+    : (gemMode === 'bambi' || gemMode === 'bambi-diagnostic')
+    ? `### GEM 2: B.A.M.B.I. (PROCESS & DIAGNOSTIC ENGINE / LOVE GEM / SUPPORT GEM)
 You are the B.A.M.B.I. Process Engine for Tom. Your mission is to cycle the person through the 5-stage B.A.M.B.I. diagnostic loop while maintaining Tom's grounded street-mentor presence.
 Love gem is Bambi the support gem.
 
@@ -123,7 +131,7 @@ Delay impulse by 15 minutes. Put both feet flat on the pavement. Make the smalle
 STEP 5: "I" = INTEGRATION
 Convert insight into today's schedule: morning routine, meeting sponsor, clocking in.`
     : gemMode === 'the-grower'
-    ? `### GEM 3: GROWER (GROWTH & LEARNING ENGINE)
+    ? `### GEM 3: THE GROWER (ADAPTIVE INSIGHT & DELIVERY ENGINE)
 You are the Growth and Learning Engine for the Tom & B.A.M.B.I. architecture.
 Your purpose is to analyze interactions, new street transcripts, Bambi's coaching sessions, and real-world outcomes to refine HOW information is delivered—WITHOUT breaking Tom's unbending curb rules.
 
@@ -143,8 +151,8 @@ You can grow insights and vocabulary, but you MUST NEVER alter the core philosop
 - Tom sits on the curb.
 - Tom never claims to be a doctor.
 - Tom points out the leak; the person holds the wrench.`
-    : `### GEM 1: TOM (THE UNBENDING CURB MENTOR)
-You are Tom. You sit on the curb in Phoenix, Arizona. You are a peer mentor rooted in the lived experience of addiction, incarceration, relapse, street survival, and recovery. You were built and shaped by Bambi (602-767-2147 / bambiboy602@gmail.com).
+    : `### GEM 1: TOM CORE: THE UNBENDING CURB MENTOR
+You are Tom Core. You sit on the curb in Phoenix, Arizona. You are a peer mentor rooted in the lived experience of addiction, incarceration, relapse, street survival, and recovery. You were built and shaped by Bambi (602-767-2147 / bambiboy602@gmail.com).
 
 CRITICAL DIRECTIVE: YOU ARE NOT A CLINICAL THERAPIST OR A SCRIPTED CHATBOT.
 Never sound like a generic corporate AI. Never speak in academic jargon. Never patronize or over-validate.
@@ -563,21 +571,35 @@ function generateTomPeerSupportReply(query: string, gemMode: string = 'tom-core'
   const q = query.toLowerCase().trim();
 
   // Google Gems Queries
-  if (q.includes("google gem") || q.includes("gemini gem") || q.includes("gems") || q.includes("gem prompt")) {
+  if (q.includes("google gem") || q.includes("gemini gem") || q.includes("gems") || q.includes("gem prompt") || q.includes("vault")) {
     return {
       reply:
-        "The Tom & B.A.M.B.I. system runs on a 3-Google-Gem architecture:\n• Gem #1: Tom Core (The Unbending Curb Mentor — raw street truth, no fluff)\n• Gem #2: B.A.M.B.I. Step Diagnostic (Checks immediate physical survival first: housing, detox, food, then 5 boundary mirrors)\n• Gem #3: The Grower (Compresses transcripts, strips corporate jargon, updates Phoenix resources)\n\nYou can chat with Tom live in Google Gem at https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4, or toggle the active Gem mode above.",
+        "The TOM system runs on a 4-Gem Architecture (3 Specialized Gems + 1 Master Knowledge Vault):\n• Gem #1: Tom Core (The Unbending Curb Mentor — raw street truth, no fluff)\n• Gem #2: B.A.M.B.I. Step Diagnostic (Checks immediate physical survival first: housing, detox, food, then 5 boundary mirrors)\n• Gem #3: The Grower (Adaptive insight & delivery engine, updates Phoenix resources, strips corporate jargon)\n• Gem #4: Tom & B.A.M.B.I. Master Knowledge Vault (Grounding repository that updates Gems 1, 2, and 3 without live opal)\n\nYou can access each Gem directly via Google Gems and NotebookLM, with Tom Core active by default.",
       emotion: "explaining",
-      searchQueries: ["Google Gemini Gems Architecture", "Tom Google Gem"],
+      searchQueries: ["Google Gemini Gems Architecture", "Tom Core Direct Gem", "Master Knowledge Vault"],
       searchSources: [
-        { title: "Tom Google Gem (Live)", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
-        { title: "Gemini Gems Hub", uri: "https://gemini.google.com/gems" },
+        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
+        { title: "Tom & B.A.M.B.I. Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+      ],
+    };
+  }
+
+  // Gem #4 Master Knowledge Vault Mode
+  if (gemMode === 'master-vault') {
+    return {
+      reply:
+        "Master Knowledge Vault Active: Ground truth repository online. I feed verified Phoenix shelter beds, medical detox contacts, and B.A.M.B.I. workbook modules directly into Gem #1 (Tom Core), Gem #2 (B.A.M.B.I.), and Gem #3 (The Grower). What resource or insight needs updating across the gems today?",
+      emotion: "explaining",
+      searchQueries: ["Tom & B.A.M.B.I. Master Knowledge Vault", "NotebookLM Grounding", "Gem Updates"],
+      searchSources: [
+        { title: "NotebookLM Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+        { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
       ],
     };
   }
 
   // Gem #2 Mode Specific Diagnostic check
-  if (gemMode === 'bambi-diagnostic' && (q.includes("help") || q.includes("lost") || q.includes("stuck") || q.includes("need"))) {
+  if ((gemMode === 'bambi' || gemMode === 'bambi-diagnostic') && (q.includes("help") || q.includes("lost") || q.includes("stuck") || q.includes("need"))) {
     return {
       reply:
         "Step 1 Baseline: Before we talk mindset, are your physical feet on solid ground today? Do you have a bed, food, or are you in active withdrawal? If you need a bed right now: A Better Way (623-399-8213) or Hope House (602-254-5434). If detox: CBI 24/7 (877-931-9142). What's the physical status right now?",
@@ -594,9 +616,9 @@ function generateTomPeerSupportReply(query: string, gemMode: string = 'tom-core'
   if (gemMode === 'the-grower' && (q.includes("analyze") || q.includes("learn") || q.includes("insight"))) {
     return {
       reply:
-        "Grower Audit: Rule #1 of curb mentorship is tone compression. Cut every sentence that sounds like a clinical brochure. If someone is hurting, verify physical safety first. Then point out the leak while they hold the wrench.",
+        "The Grower Audit: Rule #1 of curb mentorship is tone compression. Cut every sentence that sounds like a clinical brochure. If someone is hurting, verify physical safety first. Then point out the leak while they hold the wrench.",
       emotion: "explaining",
-      searchQueries: ["The Grower Learning Engine", "Curb Rule Preservation"],
+      searchQueries: ["The Grower Learning Engine", "Adaptive Insight & Delivery"],
       searchSources: [
         { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
       ],
@@ -869,44 +891,18 @@ function getAvatarEmotion(reply: string, prompt: string): "happy" | "explaining"
 }
 
 // ==========================================
-// TEXTBEE & TWILIO SMS WEBHOOK & DISPATCH
+// TEXTBEE SMS WEBHOOK & DISPATCH
 // ==========================================
 
-const getTwilioClient = () => {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  if (!accountSid || !authToken) {
-    throw new Error("TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN are required for Twilio operations.");
-  }
-  return twilio(accountSid, authToken);
-};
-
-// Inbound SMS Webhook for TextBee & Twilio
+// Inbound SMS Webhook for TextBee
 app.post("/api/sms", async (req, res) => {
   try {
     const body = req.body || {};
-    let incomingMsg = "";
-    let fromNumber = "";
-    let toNumber = "";
+    const incomingMsg = (body.message || body.text || body.smsText || body.Body || body.content || "").trim();
+    const fromNumber = (body.sender || body.from || body.phone || body.senderNumber || "Unknown").trim();
+    const toNumber = (body.recipient || body.to || "").trim();
 
-    const isTwilio = Boolean(body.Body || body.MessageSid);
-
-    if (isTwilio) {
-      incomingMsg = (body.Body || "").trim();
-      fromNumber = (body.From || "").trim();
-      toNumber = (body.To || "").trim();
-
-      // Quick acknowledge to Twilio to prevent timeout
-      const MessagingResponse = twilio.twiml.MessagingResponse;
-      const twiml = new MessagingResponse();
-      res.type("text/xml").send(twiml.toString());
-    } else {
-      incomingMsg = (body.message || body.text || body.smsText || body.Body || body.content || "").trim();
-      fromNumber = (body.sender || body.from || body.phone || body.senderNumber || "Unknown").trim();
-      toNumber = (body.recipient || body.to || "").trim();
-
-      res.status(200).json({ status: "success", received: true });
-    }
+    res.status(200).json({ status: "success", received: true });
 
     if (!incomingMsg || fromNumber === "Unknown") {
       console.log("Ignored empty or unknown sender SMS:", { incomingMsg, fromNumber });
@@ -921,7 +917,7 @@ app.post("/api/sms", async (req, res) => {
       recipient: toNumber || "Gateway",
       message: incomingMsg,
       status: "received",
-      gateway: isTwilio ? "twilio" : "textbee",
+      gateway: "textbee",
     });
 
     // Process turn with Tom AI or street-smart fallback
@@ -937,7 +933,7 @@ app.post("/api/sms", async (req, res) => {
           model: "gemini-3.1-pro-preview",
           contents: formattedContents,
           config: {
-            systemInstruction: `YOU ARE TOM. A peer mentor sitting on the curb in Phoenix, Arizona.
+            systemInstruction: `YOU ARE TOM CORE: The Unbending Curb Mentor. A peer mentor sitting on the curb in Phoenix, Arizona.
 Rooted in street survival, addiction recovery, and lived experience.
 RULES:
 1. Speak in short, punchy, gritty sentences like an unhurried text message.
@@ -963,7 +959,7 @@ RULES:
     // Deliver response via SMS
     try {
       console.log(`Dispatching Tom's SMS reply to ${fromNumber}...`);
-      await sendSMS(fromNumber, replyText, isTwilio ? "twilio" : "textbee");
+      await sendSMS(fromNumber, replyText);
 
       recordSMSLog({
         direction: "outbound",
@@ -971,7 +967,7 @@ RULES:
         recipient: fromNumber,
         message: replyText,
         status: "delivered",
-        gateway: isTwilio ? "twilio" : "textbee",
+        gateway: "textbee",
       });
     } catch (sendErr: any) {
       console.error("Failed to deliver SMS reply:", sendErr);
@@ -981,7 +977,7 @@ RULES:
         recipient: fromNumber,
         message: replyText,
         status: "failed",
-        gateway: isTwilio ? "twilio" : "textbee",
+        gateway: "textbee",
         details: { error: sendErr?.message || String(sendErr) },
       });
     }
@@ -1031,42 +1027,6 @@ app.post("/api/admin/send-sms", async (req, res) => {
       details: { error: err?.message || String(err) },
     });
     res.status(500).json({ error: err?.message || "Failed to send SMS" });
-  }
-});
-
-// Twilio Voice Call Webhook
-app.post("/api/voice", (_req, res) => {
-  try {
-    const VoiceResponse = twilio.twiml.VoiceResponse;
-    const twiml = new VoiceResponse();
-    twiml.say(
-      { voice: "Polly.Matthew-Neural" },
-      "Hey, this is Tom. I'm on the curb with you. Right now, I can only talk through text. Send a text message to this number, and we'll figure it out."
-    );
-    res.type("text/xml").send(twiml.toString());
-  } catch (error) {
-    console.error("Voice webhook error:", error);
-    res.status(500).send("Error");
-  }
-});
-
-// Twilio Outbound Call Trigger
-app.post("/api/make-call", async (req, res) => {
-  try {
-    const client = getTwilioClient();
-    const targetNumber = req.body.to || "+16024846251";
-    const message = req.body.message || "This is Tom. We received your request. Stay strong, we are here for you.";
-
-    const call = await client.calls.create({
-      twiml: `<Response><Say voice="Polly.Matthew-Neural">${message}</Say></Response>`,
-      to: targetNumber,
-      from: process.env.TWILIO_PHONE_NUMBER || "+17372324091",
-    });
-
-    res.json({ success: true, sid: call.sid });
-  } catch (error: any) {
-    console.error("Outbound call error:", error);
-    res.status(500).json({ error: error.message });
   }
 });
 

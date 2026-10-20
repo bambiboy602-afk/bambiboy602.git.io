@@ -20,6 +20,7 @@ import {
   Play,
   Check,
   MessageSquare,
+  BookOpen,
 } from 'lucide-react';
 import { AnimatedAvatar, AvatarStyle } from './AnimatedAvatar';
 import { ChatMessage, AvatarEmotion, ProductItem, CreatorProfile } from '../types';
@@ -27,7 +28,14 @@ import { useSpeech } from '../hooks/useSpeech';
 import { generateClientTomReply } from '../services/tomBrainEngine';
 import { GoogleGemsModal } from './GoogleGemsModal';
 import { SMSGatewayModal } from './SMSGatewayModal';
-import { OFFICIAL_TOM_GEM_URL, BAMBI_GEM_URL, GROWER_GEM_URL } from '../data/googleGemsData';
+import {
+  OFFICIAL_TOM_GEM_URL,
+  BAMBI_GEM_URL,
+  GROWER_GEM_URL,
+  MASTER_VAULT_GEM_URL,
+  NOTEBOOK_LLM_URL,
+  GemModeId,
+} from '../data/googleGemsData';
 import { TOM_OPENING_STATEMENT } from '../data/tomOpeningStatements';
 
 interface TomBotCardProps {
@@ -49,7 +57,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
   const [isThinking, setIsThinking] = useState(false);
   const [avatarEmotion, setAvatarEmotion] = useState<AvatarEmotion>('greeting');
   const [showSharedLink, setShowSharedLink] = useState(false);
-  const [activeGemMode, setActiveGemMode] = useState<'tom-core' | 'bambi-diagnostic' | 'the-grower'>('tom-core');
+  const [activeGemMode, setActiveGemMode] = useState<GemModeId>('tom-core');
   const [showGemsModal, setShowGemsModal] = useState(false);
   const [showSMSModal, setShowSMSModal] = useState(false);
 
@@ -375,17 +383,29 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
             <Sparkles className="w-3 h-3 text-amber-200" />
             <span>Google Gems</span>
           </button>
+
+          <a
+            href={NOTEBOOK_LLM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-950/70 border border-blue-300 dark:border-blue-800 text-blue-900 dark:text-blue-300 text-[10px] font-bold shadow-xs transition-all hover:scale-105"
+            title="Open Tom & B.A.M.B.I. Master Knowledge Vault in Google NotebookLM"
+          >
+            <BookOpen className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+            <span>NotebookLM</span>
+            <ExternalLink className="w-2.5 h-2.5 text-blue-500" />
+          </a>
         </div>
       </div>
 
       {/* Google Gems Mode Selector Row */}
       <div className="px-3 py-1.5 bg-stone-50 dark:bg-stone-950/60 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-1.5 text-[10px]">
-        <div className="flex items-center gap-1">
-          <span className="font-bold text-stone-500 dark:text-stone-400 flex items-center gap-1">
+        <div className="flex items-center gap-1 overflow-x-auto py-0.5">
+          <span className="font-bold text-stone-500 dark:text-stone-400 flex items-center gap-1 shrink-0">
             <Sparkles className="w-2.5 h-2.5 text-amber-500" />
             <span>Gem:</span>
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => setActiveGemMode('tom-core')}
               className={`px-1.5 py-0.5 rounded font-bold transition-all ${
@@ -393,20 +413,20 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                   ? 'bg-emerald-700 text-white shadow-xs'
                   : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
               }`}
-              title="Site Gem 1: Tom (The Unbending Curb Mentor sitting in Phoenix, AZ)"
+              title="Gem 1: Tom Core (The Unbending Curb Mentor)"
             >
-              #1 Tom
+              #1 Tom Core
             </button>
             <button
-              onClick={() => setActiveGemMode('bambi-diagnostic')}
+              onClick={() => setActiveGemMode('bambi')}
               className={`px-1.5 py-0.5 rounded font-bold transition-all ${
-                activeGemMode === 'bambi-diagnostic'
+                activeGemMode === 'bambi' || activeGemMode === 'bambi-diagnostic'
                   ? 'bg-amber-600 text-white shadow-xs'
                   : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
               }`}
-              title="Site Gem 2: Bambi (Process & Love / Support Gem - 5-Stage Survival Baseline Diagnostic)"
+              title="Gem 2: B.A.M.B.I. (Process & Diagnostic Engine)"
             >
-              #2 Bambi
+              #2 B.A.M.B.I.
             </button>
             <button
               onClick={() => setActiveGemMode('the-grower')}
@@ -415,21 +435,40 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                   ? 'bg-purple-700 text-white shadow-xs'
                   : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
               }`}
-              title="Site Gem 3: Grower (Growth & Learning Engine)"
+              title="Gem 3: The Grower (Adaptive Insight & Delivery Engine)"
             >
-              #3 Grower
+              #3 The Grower
+            </button>
+            <button
+              onClick={() => setActiveGemMode('master-vault')}
+              className={`px-1.5 py-0.5 rounded font-bold transition-all ${
+                activeGemMode === 'master-vault'
+                  ? 'bg-blue-700 text-white shadow-xs'
+                  : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
+              }`}
+              title="Gem 4: Tom & B.A.M.B.I. Master Knowledge Vault (NotebookLM Update Engine for Gems 1, 2, and 3)"
+            >
+              #4 Master Vault (NotebookLM)
             </button>
           </div>
         </div>
 
         <a
-          href={activeGemMode === 'tom-core' ? OFFICIAL_TOM_GEM_URL : activeGemMode === 'bambi-diagnostic' ? BAMBI_GEM_URL : GROWER_GEM_URL}
+          href={
+            activeGemMode === 'tom-core'
+              ? OFFICIAL_TOM_GEM_URL
+              : activeGemMode === 'the-grower'
+              ? GROWER_GEM_URL
+              : activeGemMode === 'master-vault'
+              ? MASTER_VAULT_GEM_URL
+              : BAMBI_GEM_URL
+          }
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-400 hover:underline shrink-0"
-          title="Open active Gem live on Google Gemini"
+          title={activeGemMode === 'master-vault' ? 'Open Master Knowledge Vault in NotebookLM' : 'Open active Gem directly'}
         >
-          <span>Live Gem</span>
+          <span>{activeGemMode === 'master-vault' ? 'NotebookLM Vault' : 'Direct Gem'}</span>
           <ExternalLink className="w-2.5 h-2.5" />
         </a>
       </div>

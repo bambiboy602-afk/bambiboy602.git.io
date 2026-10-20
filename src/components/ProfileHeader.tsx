@@ -10,9 +10,10 @@ import {
   ChevronRight,
   Sparkles,
   ExternalLink,
+  BookOpen,
 } from 'lucide-react';
 import { TomBotCard } from './TomBotCard';
-import { OFFICIAL_TOM_GEM_URL } from '../data/googleGemsData';
+import { OFFICIAL_TOM_GEM_URL, NOTEBOOK_LLM_URL } from '../data/googleGemsData';
 
 interface ProfileHeaderProps {
   profile: CreatorProfile;
@@ -273,11 +274,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
                       <span>Official Google Gemini Gems</span>
                       <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-extrabold">
-                        3-Gem System
+                        4-Gem Architecture
                       </span>
                     </h4>
                     <p className="text-[10.5px] text-stone-500 dark:text-stone-400">
-                      Grounded in Tom-Core-Sourcefile-Master.md
+                      Grounded in Tom-Core-Sourcefile-Master.md &amp; Master Knowledge Vault
                     </p>
                   </div>
                 </div>
@@ -288,12 +289,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
                 >
-                  <span>Chat in Google Gem</span>
+                  <span>Chat in Tom Core Gem</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 mt-2 pt-2.5 border-t border-stone-200/60 dark:border-stone-800">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2 pt-2.5 border-t border-stone-200/60 dark:border-stone-800">
                 <div className="p-2 rounded-xl bg-white/70 dark:bg-stone-800/70 border border-stone-200/60 dark:border-stone-700/60">
                   <div className="text-[9.5px] font-bold text-emerald-700 dark:text-emerald-400">Gem #1</div>
                   <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100">Tom Core</div>
@@ -301,14 +302,28 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 </div>
                 <div className="p-2 rounded-xl bg-white/70 dark:bg-stone-800/70 border border-stone-200/60 dark:border-stone-700/60">
                   <div className="text-[9.5px] font-bold text-amber-600 dark:text-amber-400">Gem #2</div>
-                  <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100">Diagnostic</div>
-                  <div className="text-[9.5px] text-stone-500 truncate">5-Stage Loop</div>
+                  <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100">B.A.M.B.I.</div>
+                  <div className="text-[9.5px] text-stone-500 truncate">5-Stage Diagnostic</div>
                 </div>
                 <div className="p-2 rounded-xl bg-white/70 dark:bg-stone-800/70 border border-stone-200/60 dark:border-stone-700/60">
                   <div className="text-[9.5px] font-bold text-purple-600 dark:text-purple-400">Gem #3</div>
                   <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100">The Grower</div>
-                  <div className="text-[9.5px] text-stone-500 truncate">Insight Learning</div>
+                  <div className="text-[9.5px] text-stone-500 truncate">Adaptive Delivery</div>
                 </div>
+                <a
+                  href={NOTEBOOK_LLM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 hover:bg-blue-100/90 dark:hover:bg-blue-900/50 transition-colors group"
+                  title="Open Master Knowledge Vault in Google NotebookLM"
+                >
+                  <div className="text-[9.5px] font-bold text-blue-700 dark:text-blue-400 flex items-center justify-between">
+                    <span>Master Vault</span>
+                    <ExternalLink className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100 truncate">NotebookLM</div>
+                  <div className="text-[9.5px] text-blue-600 dark:text-blue-300 truncate">Updates 3 Gems</div>
+                </a>
               </div>
 
               {onOpenGoogleGems && (
@@ -317,7 +332,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   className="w-full mt-2.5 py-1.5 rounded-xl bg-stone-200/80 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5"
                 >
                   <Sparkles className="w-3 h-3 text-amber-500" />
-                  <span>View All 3 Google Gem Prompts &amp; Setup</span>
+                  <span>View All 4 Google Gem Prompts &amp; Master Setup</span>
                 </button>
               )}
             </div>

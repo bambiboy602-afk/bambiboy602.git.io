@@ -14,6 +14,7 @@ import {
   BookOpen,
   Phone,
   ShieldCheck,
+  Database,
 } from 'lucide-react';
 import {
   GOOGLE_GEMS_COLLECTION,
@@ -21,13 +22,14 @@ import {
   GEMINI_GEMS_HUB_URL,
   NOTEBOOK_LLM_URL,
   GoogleGemDefinition,
+  GemModeId,
 } from '../data/googleGemsData';
 
 interface GoogleGemsModalProps {
   isOpen: boolean;
   onClose: () => void;
   activeGemId?: string;
-  onSelectGem?: (gemId: 'tom-core' | 'bambi-diagnostic' | 'the-grower') => void;
+  onSelectGem?: (gemId: GemModeId) => void;
 }
 
 export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
@@ -45,7 +47,7 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
 
   const handleCopyPrompt = (gem: GoogleGemDefinition) => {
     navigator.clipboard.writeText(gem.prompt);
-    setCopiedId(gem.id);
+    setCopiedId(String(gem.id));
     setTimeout(() => setCopiedId(null), 2500);
   };
 
@@ -57,7 +59,7 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 10 }}
           transition={{ duration: 0.2 }}
-          className="w-full max-w-3xl bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl overflow-hidden my-auto"
+          className="w-full max-w-4xl bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl overflow-hidden my-auto"
         >
           {/* Header Banner */}
           <div className="p-5 sm:p-6 bg-gradient-to-r from-emerald-950 via-stone-900 to-amber-950 text-white border-b border-white/10 relative">
@@ -71,25 +73,25 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
 
             <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-wider mb-1">
               <Sparkles className="w-4 h-4" />
-              <span>Google Gemini Gems Architecture</span>
+              <span>4-Gem Architecture • Direct Google Gemini Gems</span>
             </div>
 
             <h2 className="text-xl sm:text-2xl font-bold font-serif">
               TOM (Trusted Online Memory) System
             </h2>
-            <p className="text-xs sm:text-sm text-stone-300 max-w-xl mt-1 leading-relaxed">
-              Google Gemini Custom Gems for Tom Core, B.A.M.B.I. Step Diagnostic loop, and The Grower insight engine, grounded in the NotebookLM Master Vault.
+            <p className="text-xs sm:text-sm text-stone-300 max-w-2xl mt-1 leading-relaxed">
+              Direct Google Gemini Gems: Tom Core, B.A.M.B.I., and The Grower, continuously fed &amp; updated by the <strong>Tom &amp; B.A.M.B.I. Master Knowledge Vault</strong> without external live opal dependencies.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-2.5">
               <a
-                href={selectedGem.liveUrl}
+                href={selectedGem.directGemUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold shadow-md transition-all active:scale-95"
               >
                 <Sparkles className="w-4 h-4 text-stone-900" />
-                <span>Open {selectedGem.title} Live on Google Gem</span>
+                <span>Open {selectedGem.title} Direct Gem</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
 
@@ -122,9 +124,9 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
             {/* Gem Selection Tabs */}
             <div>
               <div className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">
-                Select a Specialized Google Gem
+                Select a Specialized Google Gem or Master Vault
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 {GOOGLE_GEMS_COLLECTION.map((gem) => {
                   const isSelected = selectedGem.id === gem.id;
                   return (
@@ -139,7 +141,7 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
                     >
                       <div className="flex items-center justify-between gap-1 mb-1">
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
-                          Gem #{gem.gemNumber}
+                          {typeof gem.gemNumber === 'number' ? `Gem #${gem.gemNumber}` : gem.gemNumber}
                         </span>
                         {isSelected && (
                           <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
@@ -147,7 +149,7 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
                           </span>
                         )}
                       </div>
-                      <div className="font-bold text-xs text-stone-900 dark:text-stone-100">
+                      <div className="font-bold text-xs text-stone-900 dark:text-stone-100 truncate">
                         {gem.title}
                       </div>
                       <div className="text-[10.5px] text-stone-500 dark:text-stone-400 truncate">
@@ -165,7 +167,7 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
-                      Gem #{selectedGem.gemNumber} • {selectedGem.badge}
+                      {typeof selectedGem.gemNumber === 'number' ? `Gem #${selectedGem.gemNumber}` : selectedGem.gemNumber} • {selectedGem.badge}
                     </span>
                   </div>
                   <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 mt-1">
@@ -223,15 +225,15 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
               </div>
             </div>
 
-            {/* NotebookLLM & Single Source Grounding Reference */}
+            {/* NotebookLLM Master Knowledge Vault Grounding Reference */}
             <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="space-y-1">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 dark:text-amber-300">
                   <ShieldCheck className="w-4 h-4 text-amber-600" />
-                  <span>Single Source of Truth Grounding</span>
+                  <span>Master Grounding &amp; Gem Update Engine</span>
                 </div>
                 <p className="text-[11.5px] text-stone-600 dark:text-stone-300">
-                  All 3 Google Gems and the on-site Tom avatar are unified and grounded in <code>Tom-Core-Sourcefile-Master.md</code>.
+                  Gem #1 (Tom Core), Gem #2 (B.A.M.B.I.), and Gem #3 (The Grower) are continuously updated and synchronized through the <strong>Tom &amp; B.A.M.B.I. Master Knowledge Vault</strong> and <code>Tom-Core-Sourcefile-Master.md</code>.
                 </p>
               </div>
 

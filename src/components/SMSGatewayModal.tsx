@@ -115,7 +115,7 @@ export const SMSGatewayModal: React.FC<SMSGatewayModalProps> = ({ isOpen, onClos
                 <span>Tom's SMS Phone Gateway</span>
                 <span className="text-[10px] bg-emerald-600 px-2 py-0.5 rounded-full font-mono flex items-center gap-1">
                   <Radio className="w-2.5 h-2.5 animate-pulse text-emerald-300" />
-                  TextBee & Twilio
+                  TextBee Gateway
                 </span>
               </h3>
               <p className="text-xs text-emerald-100">
@@ -180,7 +180,7 @@ export const SMSGatewayModal: React.FC<SMSGatewayModalProps> = ({ isOpen, onClos
                   <span>How Tom's Text Message Gateway Works</span>
                 </div>
                 <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                  Anyone can text Tom directly from any standard cell phone. When a message is sent to your connected phone number or TextBee device, Tom processes the text through the <strong>Tom Core Runtime</strong> (gritty, unhurried, street-level peer support) and texts back automatically.
+                  Anyone can text Tom directly from any standard cell phone. When a message is sent to your connected phone number or TextBee device, Tom processes the text through the <strong>Tom Core: The Unbending Curb Mentor</strong> runtime (gritty, unhurried, street-level peer support) and texts back automatically.
                 </p>
               </div>
 
@@ -200,14 +200,14 @@ export const SMSGatewayModal: React.FC<SMSGatewayModalProps> = ({ isOpen, onClos
 
                 <div className="p-3.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/60 space-y-1.5">
                   <div className="font-bold text-xs text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Voice & TTS Hotline</span>
+                    <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Bambi Direct Hotline</span>
                   </div>
-                  <p className="text-[11px] text-stone-500 font-mono break-all bg-white dark:bg-stone-900 p-2 rounded border border-stone-200 dark:border-stone-800">
-                    /api/voice & /api/make-call
+                  <p className="text-[11px] text-stone-700 dark:text-stone-300 font-mono break-all bg-white dark:bg-stone-900 p-2 rounded border border-stone-200 dark:border-stone-800 font-bold">
+                    Call / Text: (602) 767-2147
                   </p>
                   <p className="text-[11px] text-stone-500">
-                    Handles inbound calls or automated outbound wellness checks using Amazon Polly neural voice synthesis.
+                    Direct line to Bambi for emergency bed placement, crisis de-escalation, detox transport, and second-chance apprenticeships in Phoenix.
                   </p>
                 </div>
               </div>

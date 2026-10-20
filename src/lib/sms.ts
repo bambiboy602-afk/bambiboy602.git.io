@@ -1,5 +1,3 @@
-import twilio from "twilio";
-
 export interface SMSLogEntry {
   id: string;
   timestamp: string;
@@ -8,7 +6,7 @@ export interface SMSLogEntry {
   recipient: string;
   message: string;
   status: "received" | "delivered" | "failed";
-  gateway: "textbee" | "twilio";
+  gateway: "textbee";
   details?: any;
 }
 
@@ -76,45 +74,12 @@ export async function sendViaTextBee(recipient: string, message: string) {
   return result;
 }
 
-// Twilio dispatch helper
-export async function sendViaTwilio(recipient: string, message: string, fromNumber?: string) {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const twilioNumber = fromNumber || process.env.TWILIO_PHONE_NUMBER || "+17372324091";
-
-  if (!accountSid || !authToken) {
-    throw new Error("Twilio Account SID or Auth Token missing.");
-  }
-
-  const client = twilio(accountSid, authToken);
-  const result = await client.messages.create({
-    body: message,
-    from: twilioNumber,
-    to: recipient,
-  });
-
-  return { sid: result.sid, status: result.status };
-}
-
-// Unified multi-gateway SMS sender
-export async function sendSMS(recipient: string, message: string, preferGateway: "textbee" | "twilio" = "textbee") {
-  if (preferGateway === "textbee" && process.env.TEXTBEE_API_KEY && process.env.TEXTBEE_DEVICE_ID) {
-    try {
-      return await sendViaTextBee(recipient, message);
-    } catch (err) {
-      console.warn("TextBee delivery failed, attempting Twilio fallback...", err);
-      if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-        return await sendViaTwilio(recipient, message);
-      }
-      throw err;
-    }
-  }
-
-  // Otherwise try Twilio
-  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-    return await sendViaTwilio(recipient, message);
+// Direct SMS Gateway Dispatcher
+export async function sendSMS(recipient: string, message: string) {
+  if (process.env.TEXTBEE_API_KEY && process.env.TEXTBEE_DEVICE_ID) {
+    return await sendViaTextBee(recipient, message);
   }
 
   // If credentials are not yet configured
-  throw new Error("No SMS Gateway configured. Please provide TEXTBEE_API_KEY or TWILIO credentials in Settings.");
+  throw new Error("No SMS Gateway configured. Please provide TEXTBEE_API_KEY and TEXTBEE_DEVICE_ID in environment settings.");
 }
