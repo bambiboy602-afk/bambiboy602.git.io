@@ -9,7 +9,7 @@
 
 export const TOM_OPENING_STATEMENT = {
   // Initial message text displayed in the chat window on first load
-  chatWelcome: `I'm Tom. Sitting on the curb. No lectures, no hurry. What are you carrying today?`,
+  chatWelcome: `I'm Tom. chilling. No lectures, no hurry. whats going on with you today?`,
 
   // Spoken aloud when tapping Tom's animated avatar face
   avatarTapGreeting: `Hey! I'm Tom, Bambi's peer mentor. Sitting on the curb. No lectures, no hurry. Tap the mic or type anytime.`,

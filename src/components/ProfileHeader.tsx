@@ -27,6 +27,9 @@ interface ProfileHeaderProps {
   onScrollToContact: () => void;
   onOpenPillar?: (pillar: 'housing' | 'work' | 'treatment' | 'legal') => void;
   onOpenGoogleGems?: () => void;
+  isSudoMode?: boolean;
+  onToggleSudoMode?: () => void;
+  onSetSudoMode?: (active: boolean) => void;
 }
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -41,6 +44,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onScrollToContact,
   onOpenPillar,
   onOpenGoogleGems,
+  isSudoMode = false,
+  onToggleSudoMode,
+  onSetSudoMode,
 }) => {
   const getPillarIcon = (iconName: string) => {
     switch (iconName) {
@@ -90,6 +96,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             sharedChatUrl={sharedChatUrl}
             externalPrompt={externalPrompt}
             onClearExternalPrompt={onClearExternalPrompt}
+            isSudoMode={isSudoMode}
+            onToggleSudoMode={onToggleSudoMode}
+            onSetSudoMode={onSetSudoMode}
           />
 
           {/* Bambi Signature Pic brought below Chat Bot - Widened 300%, low height, no frame */}
@@ -263,79 +272,81 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               </div>
             </div>
 
-            {/* Google Gemini Gems AI Architecture Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/20 via-stone-900/40 to-amber-950/20 dark:from-emerald-950/50 dark:to-amber-950/40 border border-emerald-600/30 dark:border-emerald-500/30 shadow-md">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-xl bg-amber-400 text-stone-950 shrink-0">
-                    <Sparkles className="w-4 h-4" />
+            {/* Google Gemini Gems AI Architecture Card (Sudo Mode Only) */}
+            {isSudoMode && (
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/20 via-stone-900/40 to-amber-950/20 dark:from-emerald-950/50 dark:to-amber-950/40 border border-emerald-600/30 dark:border-emerald-500/30 shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-xl bg-amber-400 text-stone-950 shrink-0">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                        <span>Canonical Gem Architecture</span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-extrabold">
+                          Master Spec v1.0
+                        </span>
+                      </h4>
+                      <p className="text-[10.5px] text-stone-500 dark:text-stone-400">
+                        Grounded in Tom-Master-System-Specification.md &amp; NotebookLM Vault
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                      <span>Official Google Gemini Gems</span>
-                      <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-extrabold">
-                        4-Gem Architecture
-                      </span>
-                    </h4>
-                    <p className="text-[10.5px] text-stone-500 dark:text-stone-400">
-                      Grounded in Tom-Core-Sourcefile-Master.md &amp; Master Knowledge Vault
-                    </p>
-                  </div>
+
+                  <a
+                    href={OFFICIAL_TOM_GEM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
+                  >
+                    <span>Chat in Tom Core Gem</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
 
-                <a
-                  href={OFFICIAL_TOM_GEM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
-                >
-                  <span>Chat in Tom Core Gem</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2 pt-2.5 border-t border-stone-200/60 dark:border-stone-800">
+                  <div className="p-2 rounded-xl bg-white/70 dark:bg-stone-800/70 border border-stone-200/60 dark:border-stone-700/60">
+                    <div className="text-[9.5px] font-bold text-emerald-700 dark:text-emerald-400">Gem 1</div>
+                    <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100">Tom Core</div>
+                    <div className="text-[9.5px] text-stone-500 truncate">Curb Mentor Voice</div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/70 dark:bg-stone-800/70 border border-stone-200/60 dark:border-stone-700/60">
+                    <div className="text-[9.5px] font-bold text-amber-600 dark:text-amber-400">Gem 2</div>
+                    <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100">B.A.M.B.I.</div>
+                    <div className="text-[9.5px] text-stone-500 truncate">5-Stage Adaptive</div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/70 dark:bg-stone-800/70 border border-stone-200/60 dark:border-stone-700/60">
+                    <div className="text-[9.5px] font-bold text-purple-600 dark:text-purple-400">Gem 3</div>
+                    <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100">The Grower</div>
+                    <div className="text-[9.5px] text-stone-500 truncate">Adaptive Auditor</div>
+                  </div>
+                  <a
+                    href={NOTEBOOK_LLM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 hover:bg-blue-100/90 dark:hover:bg-blue-900/50 transition-colors group"
+                    title="Open Master Knowledge Vault in Google NotebookLM"
+                  >
+                    <div className="text-[9.5px] font-bold text-blue-700 dark:text-blue-400 flex items-center justify-between">
+                      <span>Gem 5 Vault</span>
+                      <ExternalLink className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                    <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100 truncate">NotebookLM</div>
+                    <div className="text-[9.5px] text-blue-600 dark:text-blue-300 truncate">Master Grounding</div>
+                  </a>
+                </div>
+
+                {onOpenGoogleGems && (
+                  <button
+                    onClick={onOpenGoogleGems}
+                    className="w-full mt-2.5 py-1.5 rounded-xl bg-stone-200/80 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    <span>View Gem Prompts &amp; One Brain Orchestration</span>
+                  </button>
+                )}
               </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2 pt-2.5 border-t border-stone-200/60 dark:border-stone-800">
-                <div className="p-2 rounded-xl bg-white/70 dark:bg-stone-800/70 border border-stone-200/60 dark:border-stone-700/60">
-                  <div className="text-[9.5px] font-bold text-emerald-700 dark:text-emerald-400">Gem #1</div>
-                  <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100">Tom Core</div>
-                  <div className="text-[9.5px] text-stone-500 truncate">Curb Mentor</div>
-                </div>
-                <div className="p-2 rounded-xl bg-white/70 dark:bg-stone-800/70 border border-stone-200/60 dark:border-stone-700/60">
-                  <div className="text-[9.5px] font-bold text-amber-600 dark:text-amber-400">Gem #2</div>
-                  <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100">B.A.M.B.I.</div>
-                  <div className="text-[9.5px] text-stone-500 truncate">5-Stage Diagnostic</div>
-                </div>
-                <div className="p-2 rounded-xl bg-white/70 dark:bg-stone-800/70 border border-stone-200/60 dark:border-stone-700/60">
-                  <div className="text-[9.5px] font-bold text-purple-600 dark:text-purple-400">Gem #3</div>
-                  <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100">The Grower</div>
-                  <div className="text-[9.5px] text-stone-500 truncate">Adaptive Delivery</div>
-                </div>
-                <a
-                  href={NOTEBOOK_LLM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 hover:bg-blue-100/90 dark:hover:bg-blue-900/50 transition-colors group"
-                  title="Open Master Knowledge Vault in Google NotebookLM"
-                >
-                  <div className="text-[9.5px] font-bold text-blue-700 dark:text-blue-400 flex items-center justify-between">
-                    <span>Master Vault</span>
-                    <ExternalLink className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                  <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100 truncate">NotebookLM</div>
-                  <div className="text-[9.5px] text-blue-600 dark:text-blue-300 truncate">Updates 3 Gems</div>
-                </a>
-              </div>
-
-              {onOpenGoogleGems && (
-                <button
-                  onClick={onOpenGoogleGems}
-                  className="w-full mt-2.5 py-1.5 rounded-xl bg-stone-200/80 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Sparkles className="w-3 h-3 text-amber-500" />
-                  <span>View All 4 Google Gem Prompts &amp; Master Setup</span>
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>

@@ -73,14 +73,14 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
 
             <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-wider mb-1">
               <Sparkles className="w-4 h-4" />
-              <span>4-Gem Architecture • Direct Google Gemini Gems</span>
+              <span>One Brain Architecture • Master System Specification v1.0</span>
             </div>
 
             <h2 className="text-xl sm:text-2xl font-bold font-serif">
-              TOM (Trusted Online Memory) System
+              TOM Peer-Support Engine &amp; Gem Flow
             </h2>
             <p className="text-xs sm:text-sm text-stone-300 max-w-2xl mt-1 leading-relaxed">
-              Direct Google Gemini Gems: Tom Core, B.A.M.B.I., and The Grower, continuously fed &amp; updated by the <strong>Tom &amp; B.A.M.B.I. Master Knowledge Vault</strong> without external live opal dependencies.
+              Tom is the single user-facing voice. Internal modules (Gem 1, 2, 3, 5) coordinate via Gem 0/99 Maestro, grounded in the <strong>Master Knowledge Vault</strong> and verified Phoenix recovery resources without clinical pretense or false embodiment.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-2.5">
@@ -108,12 +108,22 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
               </a>
 
               <a
-                href={GEMINI_GEMS_HUB_URL}
+                href="/Tom-Master-System-Specification.md"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/15 transition-colors"
               >
-                <span>Gemini Gems Hub</span>
+                <span>Master Spec v1.0</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+
+              <a
+                href="/Tom-Gem-Flow-One-Brain-Instructions.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/15 transition-colors"
+              >
+                <span>Gem Flow Guide</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>
@@ -123,8 +133,13 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
           <div className="p-5 sm:p-6 space-y-6 max-h-[72vh] overflow-y-auto">
             {/* Gem Selection Tabs */}
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">
-                Select a Specialized Google Gem or Master Vault
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                  Select a Specialized Gem Responsibility
+                </div>
+                <div className="text-[10px] text-stone-500 italic">
+                  Note: Gem 4 is intentionally unassigned per Master Spec
+                </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 {GOOGLE_GEMS_COLLECTION.map((gem) => {

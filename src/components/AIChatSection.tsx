@@ -61,6 +61,12 @@ export const AIChatSection: React.FC<AIChatSectionProps> = ({
   const [inputMessage, setInputMessage] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [avatarEmotion, setAvatarEmotion] = useState<AvatarEmotion>('greeting');
+  const [isSudoMode, setIsSudoMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bambi_sudo_mode') === 'true';
+    }
+    return false;
+  });
 
   // Voice speech hook with continuous conversation support
   const {
@@ -137,6 +143,13 @@ export const AIChatSection: React.FC<AIChatSectionProps> = ({
       console.log('Suppressed raw agent prompt meta-string error');
       setInputMessage('');
       return;
+    }
+
+    if (query.toLowerCase().includes("sudo tom")) {
+      setIsSudoMode(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('bambi_sudo_mode', 'true');
+      }
     }
 
     setInputMessage('');
@@ -505,8 +518,8 @@ export const AIChatSection: React.FC<AIChatSectionProps> = ({
                       >
                         <p className="whitespace-pre-wrap">{msg.text}</p>
 
-                        {/* Google Search Grounding Section */}
-                        {isBot && ((msg.searchQueries && msg.searchQueries.length > 0) || (msg.searchSources && msg.searchSources.length > 0)) && (
+                        {/* Google Search Grounding Section (Sudo Mode Only) */}
+                        {isBot && isSudoMode && ((msg.searchQueries && msg.searchQueries.length > 0) || (msg.searchSources && msg.searchSources.length > 0)) && (
                           <div className="mt-3 pt-3 border-t border-stone-200 dark:border-stone-700 space-y-2">
                             <div className="flex items-center gap-1.5 text-[11px] font-bold text-blue-700 dark:text-blue-400">
                               <Search className="w-3.5 h-3.5" />

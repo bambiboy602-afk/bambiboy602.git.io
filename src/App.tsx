@@ -9,7 +9,6 @@ import { GitHubPublishModal } from './components/GitHubPublishModal';
 import { RecoveryVideosPage } from './components/RecoveryVideosPage';
 import { CommunityResourcesModal, PillarTab } from './components/CommunityResourcesModal';
 import { GoogleGemsModal } from './components/GoogleGemsModal';
-import { SMSGatewayModal } from './components/SMSGatewayModal';
 import { INITIAL_CREATOR_PROFILE, INITIAL_PRODUCTS } from './data/creatorData';
 import { INITIAL_RECOVERY_VIDEOS } from './data/recoveryVideosData';
 import { ProductItem, RecoveryVideo } from './types';
@@ -22,8 +21,30 @@ export default function App() {
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState<boolean>(false);
   const [isCommunityResourcesOpen, setIsCommunityResourcesOpen] = useState<boolean>(false);
   const [isGoogleGemsModalOpen, setIsGoogleGemsModalOpen] = useState<boolean>(false);
-  const [isSMSModalOpen, setIsSMSModalOpen] = useState<boolean>(false);
   const [activePillarTab, setActivePillarTab] = useState<PillarTab>('housing');
+  const [isSudoMode, setIsSudoMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bambi_sudo_mode') === 'true';
+    }
+    return false;
+  });
+
+  const handleToggleSudoMode = () => {
+    setIsSudoMode((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('bambi_sudo_mode', String(next));
+      }
+      return next;
+    });
+  };
+
+  const handleSetSudoMode = (active: boolean) => {
+    setIsSudoMode(active);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bambi_sudo_mode', String(active));
+    }
+  };
 
   const handleOpenPillar = (pillar: PillarTab) => {
     setActivePillarTab(pillar);
@@ -149,9 +170,10 @@ export default function App() {
         onOpenGitHubModal={() => setIsGitHubModalOpen(true)}
         onOpenResources={() => handleOpenPillar('housing')}
         onOpenGoogleGems={() => setIsGoogleGemsModalOpen(true)}
-        onOpenSMSGateway={() => setIsSMSModalOpen(true)}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        isSudoMode={isSudoMode}
+        onToggleSudoMode={handleToggleSudoMode}
       />
 
       <main id="main-content">
@@ -168,6 +190,9 @@ export default function App() {
           onScrollToContact={() => scrollToSection('contact-card-section')}
           onOpenPillar={handleOpenPillar}
           onOpenGoogleGems={() => setIsGoogleGemsModalOpen(true)}
+          isSudoMode={isSudoMode}
+          onToggleSudoMode={handleToggleSudoMode}
+          onSetSudoMode={handleSetSudoMode}
         />
 
         {/* 2. Products for Sale (Pathway Domino Effect Game & B.A.M.B.I. Workbook) */}
@@ -220,11 +245,6 @@ export default function App() {
         onClose={() => setIsGoogleGemsModalOpen(false)}
       />
 
-      {/* SMS Gateway & Text Tom Phone Hotline Modal */}
-      <SMSGatewayModal
-        isOpen={isSMSModalOpen}
-        onClose={() => setIsSMSModalOpen(false)}
-      />
 
       {/* Footer with quick jumps to all sections */}
       <Footer
@@ -235,6 +255,7 @@ export default function App() {
         onNavigateToVideos={() => scrollToSection('recovery-videos-section')}
         onOpenGitHubModal={() => setIsGitHubModalOpen(true)}
         onOpenGoogleGems={() => setIsGoogleGemsModalOpen(true)}
+        isSudoMode={isSudoMode}
       />
     </div>
   );

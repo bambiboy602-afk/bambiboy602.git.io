@@ -10,6 +10,7 @@ interface FooterProps {
   onNavigateToVideos?: () => void;
   onOpenGitHubModal?: () => void;
   onOpenGoogleGems?: () => void;
+  isSudoMode?: boolean;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -20,6 +21,7 @@ export const Footer: React.FC<FooterProps> = ({
   onNavigateToVideos,
   onOpenGitHubModal,
   onOpenGoogleGems,
+  isSudoMode = false,
 }) => {
   return (
     <footer className="mt-20 border-t border-stone-200 dark:border-stone-800 bg-stone-100/80 dark:bg-stone-950/80 transition-colors">
@@ -99,36 +101,60 @@ export const Footer: React.FC<FooterProps> = ({
                   Talk to Tom AI (Voice & Search)
                 </button>
               </li>
-              <li>
-                <a
-                  href="https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-amber-500 font-semibold underline text-left inline-flex items-center gap-1"
-                >
-                  <Sparkles className="w-3 h-3 text-amber-500" />
-                  <span>Tom on Google Gem (Gemini Labs)</span>
-                </a>
-              </li>
-              {onOpenGoogleGems && (
+              {isSudoMode && (
+                <>
+                  <li>
+                    <a
+                      href="https://gemini.google.com/gem/cc4ace8c539e"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-amber-500 font-semibold underline text-left inline-flex items-center gap-1"
+                    >
+                      <Sparkles className="w-3 h-3 text-amber-500" />
+                      <span>Official Tom Core Gem</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/Tom-Master-System-Specification.md"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-emerald-600 underline text-left inline-flex items-center gap-1"
+                    >
+                      <span>Master Spec v1.0 (.md)</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/Tom-Gem-Flow-One-Brain-Instructions.md"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-emerald-600 underline text-left inline-flex items-center gap-1"
+                    >
+                      <span>Gem Flow One Brain Guide</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/Tom-Core-Sourcefile-Master.md"
+                      download="Tom-Core-Sourcefile-Master.md"
+                      className="hover:text-emerald-600 underline text-left inline-flex items-center gap-1"
+                    >
+                      <span>Tom Core Sourcefile (.md)</span>
+                    </a>
+                  </li>
+                </>
+              )}
+              {isSudoMode && onOpenGoogleGems && (
                 <li>
                   <button
                     onClick={onOpenGoogleGems}
                     className="hover:text-emerald-600 underline text-left inline-flex items-center gap-1 text-emerald-800 dark:text-emerald-300 font-semibold"
                   >
-                    <span>Google Gems Prompt System</span>
+                    <span>Gem Architecture &amp; Prompts</span>
                   </button>
                 </li>
               )}
-              <li>
-                <a
-                  href="/Tom-Core-Sourcefile-Master.md"
-                  download="Tom-Core-Sourcefile-Master.md"
-                  className="hover:text-emerald-600 underline text-left inline-flex items-center gap-1"
-                >
-                  <span>Tom Core Master Source (.md)</span>
-                </a>
-              </li>
               {onScrollToContact && (
                 <li>
                   <button onClick={onScrollToContact} className="hover:text-amber-600 font-semibold underline text-left">
@@ -142,7 +168,7 @@ export const Footer: React.FC<FooterProps> = ({
                   Dial <strong>988</strong> (Lifeline) or <strong>911</strong>
                 </span>
               </li>
-              {onOpenGitHubModal && (
+              {isSudoMode && onOpenGitHubModal && (
                 <li>
                   <button
                     onClick={onOpenGitHubModal}
@@ -161,7 +187,7 @@ export const Footer: React.FC<FooterProps> = ({
         <div className="pt-6 border-t border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500 dark:text-stone-400">
           <p>© {new Date().getFullYear()} B.A.M.B.I. Peer Support Services • bambiboy602.com. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            {onOpenGitHubModal && (
+            {isSudoMode && onOpenGitHubModal && (
               <button
                 onClick={onOpenGitHubModal}
                 className="hover:text-stone-900 dark:hover:text-stone-100 flex items-center gap-1"

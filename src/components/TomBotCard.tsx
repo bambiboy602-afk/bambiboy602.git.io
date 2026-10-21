@@ -21,13 +21,19 @@ import {
   Check,
   MessageSquare,
   BookOpen,
+  Terminal,
+  Cpu,
+  Shield,
+  Layers,
+  ChevronDown,
+  ChevronUp,
+  X,
 } from 'lucide-react';
 import { AnimatedAvatar, AvatarStyle } from './AnimatedAvatar';
 import { ChatMessage, AvatarEmotion, ProductItem, CreatorProfile } from '../types';
 import { useSpeech } from '../hooks/useSpeech';
 import { generateClientTomReply } from '../services/tomBrainEngine';
 import { GoogleGemsModal } from './GoogleGemsModal';
-import { SMSGatewayModal } from './SMSGatewayModal';
 import {
   OFFICIAL_TOM_GEM_URL,
   BAMBI_GEM_URL,
@@ -44,6 +50,9 @@ interface TomBotCardProps {
   sharedChatUrl: string;
   externalPrompt?: string;
   onClearExternalPrompt?: () => void;
+  isSudoMode?: boolean;
+  onToggleSudoMode?: () => void;
+  onSetSudoMode?: (active: boolean) => void;
 }
 
 export const TomBotCard: React.FC<TomBotCardProps> = ({
@@ -52,14 +61,50 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
   sharedChatUrl,
   externalPrompt,
   onClearExternalPrompt,
+  isSudoMode: isSudoModeProp,
+  onToggleSudoMode,
+  onSetSudoMode,
 }) => {
+  const [localSudoMode, setLocalSudoMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('bambi_sudo_mode') === 'true';
+    }
+    return false;
+  });
+
+  const isSudoActive = isSudoModeProp !== undefined ? isSudoModeProp : localSudoMode;
+
+  const handleToggleSudo = () => {
+    if (onToggleSudoMode) {
+      onToggleSudoMode();
+    } else {
+      setLocalSudoMode((prev) => {
+        const next = !prev;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('bambi_sudo_mode', String(next));
+        }
+        return next;
+      });
+    }
+  };
+
+  const handleEnableSudo = () => {
+    if (onSetSudoMode) {
+      onSetSudoMode(true);
+    } else {
+      setLocalSudoMode(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('bambi_sudo_mode', 'true');
+      }
+    }
+  };
+
   const [inputMessage, setInputMessage] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [avatarEmotion, setAvatarEmotion] = useState<AvatarEmotion>('greeting');
   const [showSharedLink, setShowSharedLink] = useState(false);
   const [activeGemMode, setActiveGemMode] = useState<GemModeId>('tom-core');
   const [showGemsModal, setShowGemsModal] = useState(false);
-  const [showSMSModal, setShowSMSModal] = useState(false);
 
   // Voice speech hook with customizer parameters
   const {
@@ -165,6 +210,11 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
   const handleSendMessage = async (textToSend?: string) => {
     const query = (textToSend || inputMessage).trim();
     if (!query || isThinking) return;
+
+    // Intercept "sudo tom" to unlock Sudo Developer Mode
+    if (query.toLowerCase().includes('sudo tom')) {
+      handleEnableSudo();
+    }
 
     // Loop Guard: Prevent sending the exact message Tom just said
     const lastBotMsg = [...messages].reverse().find((m) => m.sender === 'bot');
@@ -290,14 +340,22 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
     }
   };
 
-  const quickQuestions = [
-    'I slipped up and relapsed.',
-    'Google Gems Architecture',
-    'Sudo Tom',
-    'How does Domino Effect work?',
-    'Emergency shelter in Phoenix',
-    'Workbook exercises',
-  ];
+  const quickQuestions = isSudoActive
+    ? [
+        'I slipped up and relapsed.',
+        'Google Gems Architecture',
+        'Sudo Tom',
+        'Emergency shelter in Phoenix',
+        'Inspect System Patches',
+        'Workbook exercises',
+      ]
+    : [
+        'I slipped up and relapsed.',
+        'Emergency shelter in Phoenix',
+        'How does Domino Effect work?',
+        'Detox and crisis centers',
+        'Workbook exercises',
+      ];
 
   return (
     <div
@@ -323,29 +381,23 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
             <p className="text-[10px] text-stone-500 dark:text-stone-400 flex items-center gap-1.5">
               <span>On the curb</span>
               <span>•</span>
-              <span className="text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5 text-amber-500" />
-                Gemini Gem Router
-              </span>
+              {isSudoActive ? (
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5 text-amber-500" />
+                  Gemini Gem Router
+                </span>
+              ) : (
+                <span className="text-stone-600 dark:text-stone-400 font-medium">
+                  Phoenix Peer Support
+                </span>
+              )}
             </p>
           </div>
         </div>
 
         {/* Action Controls */}
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setShowCustomizer(!showCustomizer)}
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
-              showCustomizer
-                ? 'bg-amber-500 text-stone-950 font-black shadow-xs'
-                : 'bg-stone-200/80 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:text-stone-900'
-            }`}
-            title="Change Tom's look and sound"
-          >
-            <Sliders className="w-3 h-3" />
-            <span>Look & Sound</span>
-          </button>
-
+          {/* Always accessible voice & mute controls */}
           <button
             onClick={handleToggleContinuousVoice}
             className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
@@ -366,112 +418,335 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
             {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-500" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-600" />}
           </button>
 
-          <button
-            onClick={() => setShowSMSModal(true)}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 text-[10px] font-bold shadow-xs transition-all hover:scale-105"
-            title="Text Tom via SMS & View Gateway Telemetry"
-          >
-            <MessageSquare className="w-3 h-3 text-emerald-600" />
-            <span>SMS</span>
-          </button>
+          {/* Sudo Mode Specific Action Controls (Cleaned from UI when sudo is off) */}
+          {isSudoActive && (
+            <>
+              <button
+                onClick={() => setShowCustomizer(!showCustomizer)}
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                  showCustomizer
+                    ? 'bg-amber-500 text-stone-950 font-black shadow-xs'
+                    : 'bg-stone-200/80 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:text-stone-900'
+                }`}
+                title="Change Tom's look and sound"
+              >
+                <Sliders className="w-3 h-3" />
+                <span>Look & Sound</span>
+              </button>
 
-          <button
-            onClick={() => setShowGemsModal(true)}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-emerald-700 hover:from-amber-400 hover:to-emerald-600 text-white text-[10px] font-bold shadow-xs transition-all hover:scale-105"
-            title="Google Gemini Gems & Prompts"
+
+
+              <button
+                onClick={() => setShowGemsModal(true)}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-emerald-700 hover:from-amber-400 hover:to-emerald-600 text-white text-[10px] font-bold shadow-xs transition-all hover:scale-105"
+                title="Google Gemini Gems & Prompts"
+              >
+                <Sparkles className="w-3 h-3 text-amber-200" />
+                <span>Google Gems</span>
+              </button>
+
+              <a
+                href={NOTEBOOK_LLM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-950/70 border border-blue-300 dark:border-blue-800 text-blue-900 dark:text-blue-300 text-[10px] font-bold shadow-xs transition-all hover:scale-105"
+                title="Open Tom & B.A.M.B.I. Master Knowledge Vault in Google NotebookLM"
+              >
+                <BookOpen className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                <span>NotebookLM</span>
+                <ExternalLink className="w-2.5 h-2.5 text-blue-500" />
+              </a>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Sudo Tom Slide-Down Developer Inspector Panel */}
+      <AnimatePresence>
+        {isSudoActive && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden border-b border-stone-800 bg-stone-950 text-stone-100"
           >
-            <Sparkles className="w-3 h-3 text-amber-200" />
-            <span>Google Gems</span>
-          </button>
+            <div className="p-3 sm:p-4 space-y-3 text-xs">
+              {/* Header */}
+              <div className="flex items-center justify-between pb-2 border-b border-stone-800">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <Terminal className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-mono font-bold text-xs text-emerald-400 flex items-center gap-1.5">
+                      <span>SUDO TOM // DEVELOPER INSPECTOR</span>
+                    </h4>
+                    <span className="text-[10px] text-stone-400">
+                      Master System Spec v1.0 • Single Brain Orchestrator • NotebookLM Grounding
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700 font-mono">
+                    gemini-3.8-flash
+                  </span>
+                  <button
+                    onClick={handleToggleSudo}
+                    className="p-1 rounded-md text-stone-400 hover:text-white hover:bg-stone-800 transition-colors"
+                    title="Exit Sudo Mode"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* 1. Runtime Engine Specifications */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="p-2.5 rounded-xl bg-stone-900 border border-stone-800">
+                  <div className="flex items-center gap-1.5 text-[10px] font-mono text-stone-400">
+                    <Cpu className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Active LLM Engine</span>
+                  </div>
+                  <div className="text-[11.5px] font-bold text-stone-100 mt-1">Gemini 3.8 Flash</div>
+                  <div className="text-[9.5px] text-emerald-400">Live Google Search Grounding</div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-stone-900 border border-stone-800">
+                  <div className="flex items-center gap-1.5 text-[10px] font-mono text-stone-400">
+                    <Shield className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Failover Safeguards</span>
+                  </div>
+                  <div className="text-[11.5px] font-bold text-stone-100 mt-1">Gemini 3.1 Flash Lite</div>
+                  <div className="text-[9.5px] text-stone-400">+ Standalone RSM v1.0.0 (offline)</div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-stone-900 border border-stone-800">
+                  <div className="flex items-center gap-1.5 text-[10px] font-mono text-stone-400">
+                    <Layers className="w-3.5 h-3.5 text-purple-400" />
+                    <span>8 Canonical Patches</span>
+                  </div>
+                  <div className="text-[11.5px] font-bold text-stone-100 mt-1">Single Nervous System</div>
+                  <div className="text-[9.5px] text-stone-400">Under the Words • Tone Compression</div>
+                </div>
+              </div>
+
+              {/* 2. Gem Specialization Selector (1 Unified Brain) */}
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between text-[10px] text-stone-400 font-mono">
+                  <span>CANONICAL GEMS (SINGLE USER-FACING VOICE):</span>
+                  <a
+                    href={
+                      activeGemMode === 'tom-core'
+                        ? OFFICIAL_TOM_GEM_URL
+                        : activeGemMode === 'the-grower'
+                        ? GROWER_GEM_URL
+                        : activeGemMode === 'master-vault'
+                        ? MASTER_VAULT_GEM_URL
+                        : BAMBI_GEM_URL
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-amber-400 hover:underline"
+                  >
+                    <span>Open Direct Gem</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  <button
+                    onClick={() => setActiveGemMode('tom-core')}
+                    className={`p-2 rounded-xl text-left border transition-all ${
+                      activeGemMode === 'tom-core'
+                        ? 'bg-emerald-950/90 border-emerald-500 text-white shadow-xs ring-1 ring-emerald-500/50'
+                        : 'bg-stone-900 border-stone-800 text-stone-300 hover:bg-stone-800'
+                    }`}
+                  >
+                    <div className="text-[9px] font-mono font-bold text-emerald-400">Gem 1</div>
+                    <div className="text-[11px] font-bold truncate">Tom Core</div>
+                    <div className="text-[9px] text-stone-400 truncate">Curb Mentor Voice</div>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveGemMode('bambi')}
+                    className={`p-2 rounded-xl text-left border transition-all ${
+                      activeGemMode === 'bambi' || activeGemMode === 'bambi-diagnostic'
+                        ? 'bg-amber-950/90 border-amber-500 text-white shadow-xs ring-1 ring-amber-500/50'
+                        : 'bg-stone-900 border-stone-800 text-stone-300 hover:bg-stone-800'
+                    }`}
+                  >
+                    <div className="text-[9px] font-mono font-bold text-amber-400">Gem 2</div>
+                    <div className="text-[11px] font-bold truncate">B.A.M.B.I.</div>
+                    <div className="text-[9px] text-stone-400 truncate">5-Stage Adaptive</div>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveGemMode('the-grower')}
+                    className={`p-2 rounded-xl text-left border transition-all ${
+                      activeGemMode === 'the-grower'
+                        ? 'bg-purple-950/90 border-purple-500 text-white shadow-xs ring-1 ring-purple-500/50'
+                        : 'bg-stone-900 border-stone-800 text-stone-300 hover:bg-stone-800'
+                    }`}
+                  >
+                    <div className="text-[9px] font-mono font-bold text-purple-400">Gem 3</div>
+                    <div className="text-[11px] font-bold truncate">The Grower</div>
+                    <div className="text-[9px] text-stone-400 truncate">Adaptive Auditor</div>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveGemMode('master-vault')}
+                    className={`p-2 rounded-xl text-left border transition-all ${
+                      activeGemMode === 'master-vault'
+                        ? 'bg-blue-950/90 border-blue-500 text-white shadow-xs ring-1 ring-blue-500/50'
+                        : 'bg-stone-900 border-stone-800 text-stone-300 hover:bg-stone-800'
+                    }`}
+                  >
+                    <div className="text-[9px] font-mono font-bold text-blue-400">Gem 5</div>
+                    <div className="text-[11px] font-bold truncate">Master Vault</div>
+                    <div className="text-[9px] text-stone-400 truncate">Knowledge Library</div>
+                  </button>
+                </div>
+                <div className="text-[9.5px] text-stone-500 italic px-1">
+                  * Gem 4 is intentionally unassigned per Master System Specification v1.0. All modules coordinated by Gem 0/99 Maestro.
+                </div>
+              </div>
+
+              {/* 3. Grounding Sources & Quick Actions */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-stone-800 text-[10.5px]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-stone-400 font-mono">Grounding Sources:</span>
+                  <a
+                    href="/Tom-Master-System-Specification.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-amber-400 hover:underline font-semibold"
+                  >
+                    <span>Master Spec v1.0</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                  <span className="text-stone-600">·</span>
+                  <a
+                    href="/Tom-Gem-Flow-One-Brain-Instructions.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-emerald-400 hover:underline font-semibold"
+                  >
+                    <span>Gem Flow Guide</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                  <span className="text-stone-600">·</span>
+                  <a
+                    href={NOTEBOOK_LLM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-blue-400 hover:underline font-semibold"
+                  >
+                    <BookOpen className="w-3 h-3" />
+                    <span>NotebookLM Vault</span>
+                  </a>
+                  <span className="text-stone-600">·</span>
+                  <span className="text-stone-300">89 AZ Resources</span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setShowCustomizer(!showCustomizer)}
+                    className="px-2 py-1 rounded-lg bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-200 transition-colors flex items-center gap-1"
+                  >
+                    <Sliders className="w-3 h-3 text-amber-400" />
+                    <span>Avatar Look & Sound</span>
+                  </button>
+
+                  <button
+                    onClick={() => setShowGemsModal(true)}
+                    className="px-2 py-1 rounded-lg bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-200 transition-colors flex items-center gap-1"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    <span>Gem Prompts</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Google Gems Mode Selector Row - Visible only when Sudo is Active */}
+      {isSudoActive && (
+        <div className="px-3 py-1.5 bg-stone-50 dark:bg-stone-950/60 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-1.5 text-[10px]">
+          <div className="flex items-center gap-1 overflow-x-auto py-0.5">
+            <span className="font-bold text-stone-500 dark:text-stone-400 flex items-center gap-1 shrink-0">
+              <Sparkles className="w-2.5 h-2.5 text-amber-500" />
+              <span>Gem:</span>
+            </span>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={() => setActiveGemMode('tom-core')}
+                className={`px-1.5 py-0.5 rounded font-bold transition-all ${
+                  activeGemMode === 'tom-core'
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
+                }`}
+                title="Gem 1: Tom Core (The Unbending Curb Mentor)"
+              >
+                #1 Tom Core
+              </button>
+              <button
+                onClick={() => setActiveGemMode('bambi')}
+                className={`px-1.5 py-0.5 rounded font-bold transition-all ${
+                  activeGemMode === 'bambi' || activeGemMode === 'bambi-diagnostic'
+                    ? 'bg-amber-600 text-white shadow-xs'
+                    : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
+                }`}
+                title="Gem 2: B.A.M.B.I. (Process & Diagnostic Engine)"
+              >
+                #2 B.A.M.B.I.
+              </button>
+              <button
+                onClick={() => setActiveGemMode('the-grower')}
+                className={`px-1.5 py-0.5 rounded font-bold transition-all ${
+                  activeGemMode === 'the-grower'
+                    ? 'bg-purple-700 text-white shadow-xs'
+                    : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
+                }`}
+                title="Gem 3: The Grower (Adaptive Insight & Delivery Engine)"
+              >
+                #3 The Grower
+              </button>
+              <button
+                onClick={() => setActiveGemMode('master-vault')}
+                className={`px-1.5 py-0.5 rounded font-bold transition-all ${
+                  activeGemMode === 'master-vault'
+                    ? 'bg-blue-700 text-white shadow-xs'
+                    : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
+                }`}
+                title="Gem 4: Tom & B.A.M.B.I. Master Knowledge Vault (NotebookLM Update Engine for Gems 1, 2, and 3)"
+              >
+                #4 Master Vault (NotebookLM)
+              </button>
+            </div>
+          </div>
 
           <a
-            href={NOTEBOOK_LLM_URL}
+            href={
+              activeGemMode === 'tom-core'
+                ? OFFICIAL_TOM_GEM_URL
+                : activeGemMode === 'the-grower'
+                ? GROWER_GEM_URL
+                : activeGemMode === 'master-vault'
+                ? MASTER_VAULT_GEM_URL
+                : BAMBI_GEM_URL
+            }
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-950/70 border border-blue-300 dark:border-blue-800 text-blue-900 dark:text-blue-300 text-[10px] font-bold shadow-xs transition-all hover:scale-105"
-            title="Open Tom & B.A.M.B.I. Master Knowledge Vault in Google NotebookLM"
+            className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-400 hover:underline shrink-0"
+            title={activeGemMode === 'master-vault' ? 'Open Master Knowledge Vault in NotebookLM' : 'Open active Gem directly'}
           >
-            <BookOpen className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-            <span>NotebookLM</span>
-            <ExternalLink className="w-2.5 h-2.5 text-blue-500" />
+            <span>{activeGemMode === 'master-vault' ? 'NotebookLM Vault' : 'Direct Gem'}</span>
+            <ExternalLink className="w-2.5 h-2.5" />
           </a>
         </div>
-      </div>
-
-      {/* Google Gems Mode Selector Row */}
-      <div className="px-3 py-1.5 bg-stone-50 dark:bg-stone-950/60 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-1.5 text-[10px]">
-        <div className="flex items-center gap-1 overflow-x-auto py-0.5">
-          <span className="font-bold text-stone-500 dark:text-stone-400 flex items-center gap-1 shrink-0">
-            <Sparkles className="w-2.5 h-2.5 text-amber-500" />
-            <span>Gem:</span>
-          </span>
-          <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={() => setActiveGemMode('tom-core')}
-              className={`px-1.5 py-0.5 rounded font-bold transition-all ${
-                activeGemMode === 'tom-core'
-                  ? 'bg-emerald-700 text-white shadow-xs'
-                  : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
-              }`}
-              title="Gem 1: Tom Core (The Unbending Curb Mentor)"
-            >
-              #1 Tom Core
-            </button>
-            <button
-              onClick={() => setActiveGemMode('bambi')}
-              className={`px-1.5 py-0.5 rounded font-bold transition-all ${
-                activeGemMode === 'bambi' || activeGemMode === 'bambi-diagnostic'
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
-              }`}
-              title="Gem 2: B.A.M.B.I. (Process & Diagnostic Engine)"
-            >
-              #2 B.A.M.B.I.
-            </button>
-            <button
-              onClick={() => setActiveGemMode('the-grower')}
-              className={`px-1.5 py-0.5 rounded font-bold transition-all ${
-                activeGemMode === 'the-grower'
-                  ? 'bg-purple-700 text-white shadow-xs'
-                  : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
-              }`}
-              title="Gem 3: The Grower (Adaptive Insight & Delivery Engine)"
-            >
-              #3 The Grower
-            </button>
-            <button
-              onClick={() => setActiveGemMode('master-vault')}
-              className={`px-1.5 py-0.5 rounded font-bold transition-all ${
-                activeGemMode === 'master-vault'
-                  ? 'bg-blue-700 text-white shadow-xs'
-                  : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
-              }`}
-              title="Gem 4: Tom & B.A.M.B.I. Master Knowledge Vault (NotebookLM Update Engine for Gems 1, 2, and 3)"
-            >
-              #4 Master Vault (NotebookLM)
-            </button>
-          </div>
-        </div>
-
-        <a
-          href={
-            activeGemMode === 'tom-core'
-              ? OFFICIAL_TOM_GEM_URL
-              : activeGemMode === 'the-grower'
-              ? GROWER_GEM_URL
-              : activeGemMode === 'master-vault'
-              ? MASTER_VAULT_GEM_URL
-              : BAMBI_GEM_URL
-          }
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-400 hover:underline shrink-0"
-          title={activeGemMode === 'master-vault' ? 'Open Master Knowledge Vault in NotebookLM' : 'Open active Gem directly'}
-        >
-          <span>{activeGemMode === 'master-vault' ? 'NotebookLM Vault' : 'Direct Gem'}</span>
-          <ExternalLink className="w-2.5 h-2.5" />
-        </a>
-      </div>
+      )}
 
       {/* Look & Sound Customizer Accordion Panel */}
       <AnimatePresence>
@@ -843,8 +1118,8 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
               >
                 <p className="whitespace-pre-wrap">{msg.text}</p>
 
-                {/* Google Search Grounding Sources */}
-                {isBot && msg.searchSources && msg.searchSources.length > 0 && (
+                {/* Google Search Grounding Sources (Sudo Mode Only) */}
+                {isBot && isSudoActive && msg.searchSources && msg.searchSources.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-stone-200 dark:border-stone-700 space-y-1">
                     <div className="flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400">
                       <Search className="w-2.5 h-2.5" />
@@ -952,6 +1227,30 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
         </form>
       </div>
 
+      {/* Floating Discrete Sudo Tom Switch at Bottom of Chat */}
+      <div className="px-3 py-1.5 bg-stone-100/90 dark:bg-stone-950/80 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-[10px]">
+        <div className="flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
+          <Terminal className="w-3 h-3 text-stone-400" />
+          <span className="font-mono">mode:</span>
+          <span className={`font-mono font-bold ${isSudoActive ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-600 dark:text-stone-400'}`}>
+            {isSudoActive ? 'sudo tom (developer active)' : 'curb mentor (peer support)'}
+          </span>
+        </div>
+
+        <button
+          onClick={handleToggleSudo}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold transition-all ${
+            isSudoActive
+              ? 'bg-emerald-700 text-white shadow-xs ring-1 ring-emerald-500/50'
+              : 'bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100'
+          }`}
+          title={isSudoActive ? "Deactivate Sudo Developer Mode" : "Activate Sudo Developer Mode (reveal engine specs, gems, & sources)"}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${isSudoActive ? 'bg-white animate-pulse' : 'bg-stone-400'}`} />
+          <span>sudo tom: {isSudoActive ? 'ON' : 'OFF'}</span>
+        </button>
+      </div>
+
       {/* Google Gems Full System Modal */}
       <GoogleGemsModal
         isOpen={showGemsModal}
@@ -960,11 +1259,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
         onSelectGem={(gemId) => setActiveGemMode(gemId)}
       />
 
-      {/* SMS Gateway Modal for Tom */}
-      <SMSGatewayModal
-        isOpen={showSMSModal}
-        onClose={() => setShowSMSModal(false)}
-      />
+
     </div>
   );
 };

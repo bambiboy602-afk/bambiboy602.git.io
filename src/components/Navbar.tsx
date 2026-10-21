@@ -14,9 +14,10 @@ interface NavbarProps {
   onOpenGitHubModal: () => void;
   onOpenResources?: () => void;
   onOpenGoogleGems?: () => void;
-  onOpenSMSGateway?: () => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
+  isSudoMode?: boolean;
+  onToggleSudoMode?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -31,9 +32,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenGitHubModal,
   onOpenResources,
   onOpenGoogleGems,
-  onOpenSMSGateway,
   isDarkMode,
   onToggleDarkMode,
+  isSudoMode = false,
+  onToggleSudoMode,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-stone-50/90 dark:bg-stone-950/90 border-b border-stone-200 dark:border-stone-800 transition-colors">
@@ -93,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Tom AI Bot</span>
           </button>
 
-          {onOpenGoogleGems && (
+          {isSudoMode && onOpenGoogleGems && (
             <button
               onClick={onOpenGoogleGems}
               className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors flex items-center gap-1 text-amber-800 dark:text-amber-300 font-bold"
@@ -102,24 +104,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               <span>Google Gems</span>
               <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400 text-stone-950 font-black">
-                3
+                5
               </span>
             </button>
           )}
 
-          {onOpenSMSGateway && (
-            <button
-              onClick={onOpenSMSGateway}
-              className="hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors flex items-center gap-1 text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-100/70 dark:bg-emerald-950/60 px-2 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800"
-              title="Tom's SMS Phone Gateway & Live Telemetry"
-            >
-              <Phone className="w-3.5 h-3.5 text-emerald-600" />
-              <span>SMS App</span>
-              <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-700 text-white font-black">
-                Text Tom
-              </span>
-            </button>
-          )}
+
 
           <button
             onClick={onScrollToProducts}
@@ -160,8 +150,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Videos</span>
           </button>
 
-          {/* Google Gems button for mobile */}
-          {onOpenGoogleGems && (
+          {/* Google Gems button for mobile - Sudo Mode only */}
+          {isSudoMode && onOpenGoogleGems && (
             <button
               onClick={onOpenGoogleGems}
               className="md:hidden inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-300 text-xs font-bold shadow-xs transition-colors"
@@ -172,17 +162,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {/* SMS App button for mobile */}
-          {onOpenSMSGateway && (
-            <button
-              onClick={onOpenSMSGateway}
-              className="md:hidden inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 text-xs font-bold shadow-xs transition-colors"
-              title="SMS Gateway & Text App"
-            >
-              <Phone className="w-3.5 h-3.5 text-emerald-600" />
-              <span>SMS</span>
-            </button>
-          )}
+
 
           {/* Quick Contact Button for mobile */}
           <button
@@ -193,15 +173,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Card</span>
           </button>
 
-          {/* GitHub / Custom Domain Publish Guide */}
-          <button
-            onClick={onOpenGitHubModal}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-stone-200/70 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-semibold transition-colors"
-            title="GitHub Pages & bambiboy602.com Deployment Guide"
-          >
-            <GitBranch className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">GitHub & Domain</span>
-          </button>
+          {/* GitHub / Custom Domain Publish Guide - Sudo Mode only */}
+          {isSudoMode && (
+            <button
+              onClick={onOpenGitHubModal}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-stone-200/70 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-semibold transition-colors"
+              title="GitHub Pages & bambiboy602.com Deployment Guide"
+            >
+              <GitBranch className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">GitHub & Domain</span>
+            </button>
+          )}
 
           {/* Quick Call Button (Desktop) */}
           <a

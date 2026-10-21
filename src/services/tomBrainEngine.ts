@@ -18,6 +18,11 @@ import {
   TOM_CURB_REFLECTIONS,
   getRotatingTomReflection,
 } from '../data/tomOpeningStatements';
+import {
+  ModuleResult,
+  ModuleName,
+  SourceReference,
+} from '../types/moduleContract';
 
 export interface TomBrainResponse {
   reply: string;
@@ -31,7 +36,7 @@ export interface TomBrainResponse {
 export function generateClientTomReply(
   userMessage: string,
   history: Array<{ sender: string; text: string }> = [],
-  gemMode: 'tom-core' | 'bambi' | 'bambi-diagnostic' | 'the-grower' | 'master-vault' = 'tom-core'
+  gemMode: 'tom-core' | 'bambi' | 'bambi-diagnostic' | 'the-grower' | 'master-vault' | 'maestro' = 'tom-core'
 ): TomBrainResponse {
   const q = userMessage.trim().toLowerCase();
 
@@ -39,12 +44,14 @@ export function generateClientTomReply(
   if (q.includes("sudo tom")) {
     return {
       reply:
-        "Sudo Tom: Developer Mode Active.\n\nRuntime: TOM (Trusted Online Memory) Engine v1.0.0.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md & NotebookLM Master Vault.\nGoogle Gemini Gems Architecture:\n• Gem #1: Tom Core: The Unbending Curb Mentor\n• Gem #2: B.A.M.B.I. (Process & Diagnostic Engine)\n• Gem #3: The Grower (Adaptive Insight & Delivery Engine)\n• Gem #4: Tom & B.A.M.B.I. Master Knowledge Vault (Direct Update Engine for Gems 1, 2, and 3)\nActive Gem Mode: " + gemMode + "\nOrder of Operations: Observe → Reflect → Notice → Challenge → Move.\nStabilization Rule: Stabilization before interpretation.\nDirect Gem Access: Grounded in Master Knowledge Vault without live opal dependencies.\nStanding by for architecture, behavior, or memory pipeline modifications.",
+        "Sudo Tom: Developer Mode Active.\n\nRuntime: TOM Peer-Support System — Master System Specification v1.0.\nGrounding: docs/Tom-Master-System-Specification.md & docs/Tom-Core-Sourcefile-Master.md.\nGoogle Gemini Gems Architecture (One Brain Orchestration):\n• Gem 0/99: Maestro Orchestrator (Single Nervous System Coordinator)\n• Gem 1: Tom Core (The Voice & Conversation Engine • Unbending Curb Mentor)\n• Gem 2: B.A.M.B.I. (Process, Curriculum & Policy • Behavioral Adaptation & Mobility-Based Integration)\n• Gem 3: The Grower (Adaptive Insight & Knowledge Maintenance • Audits & Calibrates)\n• Gem 4: [INTENTIONALLY UNASSIGNED per Master Spec v1.0]\n• Gem 5: Master Knowledge Vault (Resource & Book Library • NotebookLM Grounding)\nActive Gem Mode: " + gemMode + "\nOrder of Operations: Companion before guidance → Practical baseline first → Observe → Reflect → Notice → Challenge → Move.\nNo False Embodiment Rule: Tom never falsely claims personal human lived experience; shaped by Bambi's work in Phoenix.\nStanding by for architecture, behavior, or runtime modifications.",
       avatarEmotion: "explaining",
-      searchQueries: ["Sudo Tom Developer Mode", "TOM System Architecture", "NotebookLM Master Knowledge Vault"],
+      searchQueries: ["Sudo Tom Developer Mode", "Tom Master System Specification", "NotebookLM Master Knowledge Vault"],
       searchSources: [
-        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
-        { title: "Tom & B.A.M.B.I. Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+        { title: "Master System Specification v1.0", uri: "/Tom-Master-System-Specification.md" },
+        { title: "Instructions: Gem Flow & One Brain", uri: "/Tom-Gem-Flow-One-Brain-Instructions.md" },
+        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem/cc4ace8c539e" },
+        { title: "NotebookLM Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
         { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
       ],
     };
@@ -54,12 +61,14 @@ export function generateClientTomReply(
   if (q.includes("google gem") || q.includes("gemini gem") || q.includes("gems") || q.includes("gem prompt") || q.includes("vault")) {
     return {
       reply:
-        "The TOM system runs on a 4-Gem Architecture (3 Specialized Gems + 1 Master Knowledge Vault):\n\n1. GEM 1 - TOM CORE: The Unbending Curb Mentor sitting in Phoenix, Arizona. A peer mentor rooted in lived experience of addiction, incarceration, relapse, street survival, and recovery.\n2. GEM 2 - B.A.M.B.I.: Process & Diagnostic engine cycling through the 5-stage B.A.M.B.I. diagnostic loop: Baseline survival, Awareness, Mirror boundary failures, Breakthrough, and Integration.\n3. GEM 3 - THE GROWER: Adaptive insight & delivery engine analyzing interactions and street transcripts to strip out robotic corporate fluff into punchier street truth.\n4. GEM 4 - TOM & B.A.M.B.I. MASTER KNOWLEDGE VAULT: Central grounding vault that feeds and updates Gems 1, 2, and 3 with real-time community resources, workbook modules, and lived wisdom—replacing external live opal with direct gem grounding.",
+        "The TOM system runs on a 5-Gem modular architecture unified into one single user-facing voice:\n• Gem 0/99: Maestro Orchestrator (Single Nervous System Coordinator)\n• Gem 1: Tom Core (The Voice & Conversation Engine — raw curb truth, unhurried, no clinical labels)\n• Gem 2: B.A.M.B.I. (Behavioral Adaptation & Mobility-Based Integration — 5-stage adaptive loop)\n• Gem 3: The Grower (Adaptive insight & knowledge maintenance — audits transcripts, strips corporate AI fluff)\n• Gem 4: [INTENTIONALLY UNASSIGNED per Master Spec v1.0]\n• Gem 5: Master Knowledge Vault (Approved factual knowledge, Phoenix shelter & detox directory, NotebookLM workspace)\n\nAll modules feed into Tom's single curb voice. Sudo Tom reveals developer telemetry.",
       avatarEmotion: "explaining",
-      searchQueries: ["TOM System Architecture", "Google Gemini Gems", "NotebookLM Master Knowledge Vault"],
+      searchQueries: ["Google Gemini Gems Architecture", "Tom Master System Specification", "NotebookLM Master Knowledge Vault"],
       searchSources: [
-        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
-        { title: "Tom & B.A.M.B.I. Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+        { title: "Master System Specification v1.0", uri: "/Tom-Master-System-Specification.md" },
+        { title: "Instructions: Gem Flow & One Brain", uri: "/Tom-Gem-Flow-One-Brain-Instructions.md" },
+        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem/cc4ace8c539e" },
+        { title: "NotebookLM Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
       ],
     };
   }
@@ -80,16 +89,17 @@ export function generateClientTomReply(
     };
   }
 
-  // Gem #4 Master Knowledge Vault Mode Specific Response
+  // Gem #5 Master Knowledge Vault Mode Specific Response
   if (gemMode === 'master-vault') {
     return {
       reply:
-        "Master Knowledge Vault Active: Ground truth repository online. I feed verified Phoenix shelter beds, medical detox contacts, and B.A.M.B.I. workbook modules directly into Gem #1 (Tom Core), Gem #2 (B.A.M.B.I.), and Gem #3 (The Grower). What resource, transcript, or workbook insight needs updating across the gems today?",
+        "Master Knowledge Vault Active: Ground truth repository online (Gem 5). I feed verified Phoenix shelter beds, medical detox contacts, and B.A.M.B.I. workbook modules directly into Gem #1 (Tom Core), Gem #2 (B.A.M.B.I.), and Gem #3 (The Grower). Note that Gem 4 is unassigned. What resource, transcript, or workbook insight needs updating across the system today?",
       avatarEmotion: "explaining",
       searchQueries: ["Tom & B.A.M.B.I. Master Knowledge Vault", "NotebookLM Grounding", "Gem Updates"],
       searchSources: [
         { title: "NotebookLM Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
         { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
+        { title: "Master System Specification", uri: "/Tom-Master-System-Specification.md" },
       ],
     };
   }
@@ -435,5 +445,286 @@ export function generateClientTomReply(
       { title: "B.A.M.B.I. Framework", uri: "#about" },
       { title: "Contact Bambi: 602-767-2147", uri: "tel:602-767-2147" },
     ],
+  };
+}
+
+/**
+ * Known internal project specification documents that are canonical in this codebase.
+ * Verification as a project specification attests solely to the document's authenticity
+ * as an internal engineering/design spec; it does NOT imply that community resources,
+ * phone numbers, or service availability cited within it are currently verified or active.
+ */
+const CANONICAL_INTERNAL_SPECS = new Set([
+  '/tom-master-system-specification.md',
+  'docs/tom-master-system-specification.md',
+  '/tom-core-sourcefile-master.md',
+  'docs/tom-core-sourcefile-master.md',
+  '/tom-gem-flow-one-brain-instructions.md',
+  'docs/tom-gem-flow-one-brain-instructions.md',
+  '/tom-runtime-specification-v1.0.md',
+  'docs/tom-runtime-specification-v1.0.md',
+]);
+
+/**
+ * Generates a deterministic source identifier from URI or title.
+ * Independent of array positions or ordering, ensuring identical sources
+ * produce identical IDs regardless of position in a list.
+ */
+export function generateDeterministicSourceId(uri: string, title?: string): string {
+  const base = (uri || title || 'unknown')
+    .toLowerCase()
+    .trim()
+    .replace(/^https?:\/\//, '')
+    .replace(/^tel:/, 'tel-')
+    .replace(/[^a-z0-9_-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 48);
+  return `src-${base || 'ref'}`;
+}
+
+/**
+ * Maps an internal search source to the shared SourceReference contract.
+ *
+ * Conservative source provenance rules:
+ * - Community phone numbers (988, 602-767-2147, etc.) default to 'unverified'
+ *   because live service availability, operating hours, and queue times have not
+ *   been verified by runtime.
+ * - External URLs (Google Gems, NotebookLM, web portals) default to 'unverified'.
+ * - Project specification documents are verified strictly as internal design specifications,
+ *   with an explicit note that external community resources mentioned within them are not verified.
+ * - accessedAt and lastVerifiedAt are omitted (undefined) unless an explicit timestamp exists.
+ * - Source IDs are deterministic and independent of array index.
+ */
+export function mapToSourceReference(source: { title: string; uri: string }): SourceReference {
+  const rawUri = source.uri.trim();
+  const lowerUri = rawUri.toLowerCase();
+  const lowerTitle = source.title.toLowerCase();
+
+  const id = generateDeterministicSourceId(rawUri, source.title);
+
+  // Check for explicit retirement / stale indicators in title or notes
+  if (lowerTitle.includes('retired') || lowerTitle.includes('closed') || lowerTitle.includes('discontinued')) {
+    return {
+      id,
+      title: source.title,
+      urlOrFile: rawUri,
+      status: 'retired',
+      notes: 'Documented as retired, discontinued, or closed.',
+    };
+  }
+
+  if (lowerTitle.includes('stale') || lowerTitle.includes('outdated') || lowerTitle.includes('archive')) {
+    return {
+      id,
+      title: source.title,
+      urlOrFile: rawUri,
+      status: 'stale',
+      notes: 'Flagged as potentially stale or outdated; live verification required.',
+    };
+  }
+
+  // 1. Authoritative internal project design specifications
+  const normalizedPath = lowerUri.startsWith('/') ? lowerUri : `/${lowerUri}`;
+  if (CANONICAL_INTERNAL_SPECS.has(normalizedPath) || CANONICAL_INTERNAL_SPECS.has(lowerUri)) {
+    return {
+      id,
+      title: source.title,
+      urlOrFile: rawUri,
+      status: 'verified',
+      notes:
+        'Authoritative project design specification. Attests to internal document content only; does not attest to current live service availability of external community resources cited within.',
+    };
+  }
+
+  // 2. Known national or crisis lifelines
+  if (lowerUri.startsWith('tel:988')) {
+    return {
+      id,
+      title: source.title,
+      urlOrFile: rawUri,
+      status: 'unverified',
+      notes:
+        'National lifeline number. Source authenticity known, but live service availability, wait times, and operational response are unconfirmed.',
+    };
+  }
+
+  // 3. Local community contact numbers (B.A.M.B.I., shelters, detox, clinics)
+  if (lowerUri.startsWith('tel:')) {
+    return {
+      id,
+      title: source.title,
+      urlOrFile: rawUri,
+      status: 'unverified',
+      notes:
+        'Community resource phone contact. Live service capacity, current operating hours, and intake status are unverified.',
+    };
+  }
+
+  // 4. External project URLs (Google Gems, NotebookLM workspace)
+  if (
+    lowerUri.startsWith('https://gemini.google.com/gem/') ||
+    lowerUri.startsWith('https://notebooklm.google.com/')
+  ) {
+    return {
+      id,
+      title: source.title,
+      urlOrFile: rawUri,
+      status: 'unverified',
+      notes:
+        'External project link. Source identity known, but external hosting availability and account permissions have not been confirmed.',
+    };
+  }
+
+  // 5. Default unverified fallback
+  return {
+    id,
+    title: source.title,
+    urlOrFile: rawUri,
+    status: 'unverified',
+    notes: 'Reference listed without explicit live service verification evidence.',
+  };
+}
+
+/**
+ * Resolves the module identity based on the active routing specialization.
+ *
+ * NOTE: This reflects the module responsibility within the in-process local application
+ * engine. It does NOT claim that independent external Google Gems have been invoked.
+ */
+function resolveLocalModuleName(
+  gemMode: 'tom-core' | 'bambi' | 'bambi-diagnostic' | 'the-grower' | 'master-vault' | 'maestro'
+): ModuleName {
+  switch (gemMode) {
+    case 'bambi':
+    case 'bambi-diagnostic':
+      return 'bambi-rsm';
+    case 'the-grower':
+      return 'grower';
+    case 'master-vault':
+      return 'knowledge-vault';
+    case 'maestro':
+      return 'maestro';
+    case 'tom-core':
+    default:
+      return 'tom-identity';
+  }
+}
+
+/**
+ * Shared Contract Adapter: executeTomModule
+ *
+ * Wraps the local Tom engine response in the canonical ModuleResult<TomBrainResponse> contract
+ * without breaking existing callers of generateClientTomReply.
+ *
+ * Preserves:
+ * - Full original TomBrainResponse (.result)
+ * - Conservative source provenance status (unverified by default without explicit live proof)
+ * - Module identity attribution
+ * - Advisory Signal: sets requiresOwnerApproval as an informational flag when user input
+ *   matches keywords resembling a system or spec modification request.
+ *
+ * APPROVAL BOUNDARY CLARIFICATION:
+ * requiresOwnerApproval is strictly an ADVISORY SIGNAL for downstream orchestrators or human
+ * reviewers. Keyword detection is NOT authentication, authorization, or an access control
+ * mechanism. Setting this flag does NOT block or prevent unauthorized actions.
+ */
+export function executeTomModule(
+  userMessage: string,
+  history: Array<{ sender: string; text: string }> = [],
+  gemMode: 'tom-core' | 'bambi' | 'bambi-diagnostic' | 'the-grower' | 'master-vault' | 'maestro' = 'tom-core'
+): ModuleResult<TomBrainResponse> {
+  const localResult = generateClientTomReply(userMessage, history, gemMode);
+  const moduleName = resolveLocalModuleName(gemMode);
+
+  const sources: SourceReference[] = (localResult.searchSources || []).map((s) =>
+    mapToSourceReference(s)
+  );
+
+  // Advisory signal detection (informational flag, NOT a security control)
+  const q = userMessage.trim().toLowerCase();
+  const advisoryChangeDetected =
+    q.includes('sudo') &&
+    (q.includes('update price') ||
+      q.includes('change curriculum') ||
+      q.includes('modify spec') ||
+      q.includes('edit patch'));
+
+  const uncertainties: string[] = [];
+  if (sources.some((s) => s.status === 'unverified')) {
+    uncertainties.push('One or more referenced sources lack formal offline verification records or live service confirmation.');
+  }
+  if (sources.some((s) => s.status === 'stale')) {
+    uncertainties.push('One or more referenced sources are flagged as potentially stale.');
+  }
+
+  return {
+    module: moduleName,
+    result: localResult,
+    sources: sources.length > 0 ? sources : undefined,
+    uncertainties: uncertainties.length > 0 ? uncertainties : undefined,
+    requiresOwnerApproval: advisoryChangeDetected,
+  };
+}
+
+/**
+ * Fallback response payload formatted for the existing user-facing chat API.
+ * Preserves legacy fields (reply, avatarEmotion, searchQueries, searchSources)
+ * while attaching the canonical moduleResult for contract compliance and inspectability.
+ */
+export interface FallbackChatPayload {
+  reply: string;
+  avatarEmotion: string;
+  searchQueries: string[];
+  searchSources: Array<{ title: string; uri: string }>;
+  moduleResult: ModuleResult<TomBrainResponse>;
+}
+
+/**
+ * Builds a backward-compatible chat API payload from a ModuleResult.
+ * Guaranteed not to leak uncertainties, source notes, or owner approval notices into `reply`.
+ */
+export function buildFallbackChatPayload(
+  moduleResult: ModuleResult<TomBrainResponse>
+): FallbackChatPayload {
+  return {
+    reply: moduleResult.result.reply,
+    avatarEmotion: moduleResult.result.avatarEmotion || 'thoughtful',
+    searchQueries: moduleResult.result.searchQueries || [],
+    searchSources: moduleResult.result.searchSources || [],
+    moduleResult,
+  };
+}
+
+/**
+ * Lazy fallback evaluator factory:
+ * Executes the local Tom module at most once per request, and ONLY when a
+ * fallback branch actually requires a local response.
+ */
+export function createLazyFallbackEvaluator(
+  message: string,
+  history: Array<{ sender: string; text: string }> = [],
+  gemMode: 'tom-core' | 'bambi' | 'bambi-diagnostic' | 'the-grower' | 'master-vault' | 'maestro' = 'tom-core'
+) {
+  let cached: ModuleResult<TomBrainResponse> | null = null;
+  let callCount = 0;
+
+  return {
+    getModuleResult: (): ModuleResult<TomBrainResponse> => {
+      if (!cached) {
+        callCount++;
+        cached = executeTomModule(message, history, gemMode);
+      }
+      return cached;
+    },
+    getPayload: (): FallbackChatPayload => {
+      if (!cached) {
+        callCount++;
+        cached = executeTomModule(message, history, gemMode);
+      }
+      return buildFallbackChatPayload(cached);
+    },
+    getCallCount: () => callCount,
+    isEvaluated: () => cached !== null,
   };
 }

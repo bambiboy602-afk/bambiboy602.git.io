@@ -124,9 +124,6 @@ export const RecoveryVideosPage: React.FC<RecoveryVideosPageProps> = ({
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 text-xs font-bold">
                   {videos.length} Videos
                 </span>
-                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 text-[11px] font-mono">
-                  3×6 Grid
-                </span>
               </div>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
                 Compact video placeholders that enlarge into high-definition player. Click any video to enlarge.

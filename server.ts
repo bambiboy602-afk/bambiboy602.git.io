@@ -3,20 +3,39 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
-import { recordSMSLog, getSMSLogs, getSMSStats, sendSMS } from "./src/lib/sms";
 import {
   TOM_OPENING_STATEMENT,
   TOM_CURB_REFLECTIONS,
   getRotatingTomReflection,
 } from "./src/data/tomOpeningStatements";
+import {
+  executeTomModule,
+  createLazyFallbackEvaluator,
+  buildFallbackChatPayload,
+  TomBrainResponse,
+} from "./src/services/tomBrainEngine";
+import { ModuleResult } from "./src/types/moduleContract";
+import { createRateLimiterMiddleware } from "./src/utils/rateLimiter";
 
 dotenv.config();
 
 const app = express();
 const PORT = 3000;
 
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
+// Request body size limit: 50kb is generous for chat and prevents memory exhaustion attacks
+app.use(express.json({ limit: "50kb" }));
+app.use(express.urlencoded({ extended: true, limit: "50kb" }));
+
+// Express body-parser error handler for oversized payloads (413) and malformed JSON (400)
+app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err.type === "entity.too.large" || err.status === 413) {
+    return res.status(413).json({ error: "Payload too large. Maximum request body size is 50KB." });
+  }
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({ error: "Invalid JSON format in request body." });
+  }
+  next(err);
+});
 
 // Server-side Gemini client factory (dynamically evaluates process.env.GEMINI_API_KEY so key rotations take effect immediately)
 function getGeminiClient(): GoogleGenAI | null {
@@ -32,35 +51,59 @@ function getGeminiClient(): GoogleGenAI | null {
   });
 }
 
-// Health check with detailed API key status for key rotation diagnostics
+// Health check: reveals minimal operational health without exposing API keys, key fragments, or secrets
 app.get("/api/health", (_req, res) => {
-  const key = process.env.GEMINI_API_KEY?.trim() || "";
-  const maskedKey = key
-    ? `${key.substring(0, 4)}...${key.substring(Math.max(0, key.length - 4))}`
-    : "NOT_SET";
-
   res.json({
     status: "ok",
-    hasApiKey: Boolean(key),
-    maskedApiKey: maskedKey,
-    keyRotationGuide:
-      "To rotate your Gemini API key: In Google AI Studio, open the Secrets panel or set the GEMINI_API_KEY environment variable. The server re-evaluates the key on every request without requiring a server rebuild.",
+    hasApiKey: Boolean(process.env.GEMINI_API_KEY?.trim()),
     time: new Date().toISOString(),
   });
 });
 
-// Chat endpoint for the animated AI Avatar
-app.post("/api/chat", async (req, res) => {
-  try {
-    const { message, history, profileContext, products, gemMode = 'tom-core' } = req.body;
+// Rate limiter for /api/chat: 30 requests/minute per client IP
+const chatRateLimiter = createRateLimiterMiddleware({
+  maxRequests: 30,
+  windowMs: 60000,
+});
 
-    if (!message || typeof message !== "string" || !message.trim()) {
-      return res.status(400).json({ error: "Message is required." });
+// Chat endpoint for the animated AI Avatar
+app.post("/api/chat", chatRateLimiter, async (req, res) => {
+  try {
+    if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
+      return res.status(400).json({ error: "Invalid request body: JSON object expected." });
     }
 
-    // Intercept empty objective error phrases immediately to instantly kill any loop
-    const lowMsg = message.toLowerCase().trim();
-    if (lowMsg.includes("empty objective") || lowMsg.includes("no instructions on how to proceed")) {
+    const { message, history, gemMode = 'tom-core' } = req.body;
+
+    if (message === undefined || message === null || typeof message !== "string") {
+      return res.status(400).json({ error: "Message is required and must be a string." });
+    }
+
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage) {
+      return res.status(400).json({ error: "Message cannot be empty." });
+    }
+
+    if (trimmedMessage.length > 2000) {
+      return res.status(400).json({ error: "Message exceeds maximum allowed length of 2,000 characters." });
+    }
+
+    if (history !== undefined && history !== null && !Array.isArray(history)) {
+      return res.status(400).json({ error: "History must be an array when provided." });
+    }
+
+    const rawHistory = Array.isArray(history) ? history : [];
+    if (rawHistory.length > 50) {
+      return res.status(400).json({ error: "History array exceeds maximum limit of 50 items." });
+    }
+
+    // Intercept empty objective error phrases or reset triggers immediately to instantly kill any loop
+    const lowMsg = trimmedMessage.toLowerCase();
+    if (
+      lowMsg.includes("empty objective") ||
+      lowMsg.includes("no instructions on how to proceed") ||
+      lowMsg.includes("__reset_tom_chat__")
+    ) {
       return res.json({
         reply: TOM_OPENING_STATEMENT.chatWelcome,
         avatarEmotion: "greeting",
@@ -69,47 +112,84 @@ app.post("/api/chat", async (req, res) => {
       });
     }
 
-    // Helper for intelligent, street-smart peer support fallback
-    const fallbackResponse = generateTomPeerSupportReply(message, gemMode);
+    const validGemModes = [
+      'tom-core',
+      'bambi',
+      'bambi-diagnostic',
+      'the-grower',
+      'master-vault',
+      'maestro',
+    ] as const;
+    type ValidGemMode = (typeof validGemModes)[number];
+    const normalizedGemMode: ValidGemMode = validGemModes.includes(gemMode as ValidGemMode)
+      ? (gemMode as ValidGemMode)
+      : 'tom-core';
+
+    const formattedHistory: Array<{ sender: string; text: string }> = rawHistory
+      .slice(-20)
+      .map((item: any) => ({
+        sender: typeof item?.sender === "string" && item.sender.trim() ? item.sender.trim().slice(0, 50) : "user",
+        text: typeof item?.text === "string" ? item.text.slice(0, 2000) : "",
+      }));
+
+    // Lazy fallback evaluator: executes at most once per request, ONLY when needed by a fallback branch
+    const lazyFallback = createLazyFallbackEvaluator(trimmedMessage, formattedHistory, normalizedGemMode);
 
     // Developer Mode Trigger: "Sudo Tom"
     if (message.toLowerCase().includes("sudo tom")) {
       return res.json({
         reply:
-          "Sudo Tom: Developer Mode Active.\n\nRuntime: Tom Core Runtime v3.0 Master Edition.\nSingle Source Grounding: Tom-Core-Sourcefile-Master.md (Consolidated in /docs & /public).\nProfile: Man of few words. The guy sitting on the curb at 2 A.M.\nActive Patches: Single Nervous System, Under the Words, The Lantern, The Vault, Sudo Boundary, Load Regulator, Tone Compression.\nEngine: Recursive Stabilization Model (RSM) + 5 Boundary Failures + B.A.M.B.I. Excavation.\nSpeech Engine: Web Speech API synchronized with audio-level avatar lip-sync.\nGoogle Gems System (4-Gem Grounded Architecture):\n• Gem #1: Tom Core: The Unbending Curb Mentor (Default)\n• Gem #2: B.A.M.B.I. (Process & Diagnostic Engine)\n• Gem #3: The Grower (Adaptive Insight & Delivery Engine)\n• Gem #4: Tom & B.A.M.B.I. Master Knowledge Vault (Direct Gem Update Engine)\nActive Gem Mode: " + gemMode + "\nDirect Gem Access: Direct from Google Gems and Master Vault without live opal dependencies.\nStanding by for architecture, behavior, or runtime modifications.",
+          "Sudo Tom: Developer Mode Active.\n\nRuntime: TOM Peer-Support System — Master System Specification v1.0.\nGrounding: docs/Tom-Master-System-Specification.md & docs/Tom-Core-Sourcefile-Master.md.\nGoogle Gemini Gems Architecture (One Brain Orchestration):\n• Gem 0/99: Maestro / Orchestrator (Single Nervous System Coordinator)\n• Gem 1: Tom Core (The Voice & Conversation Engine • Unbending Curb Mentor)\n• Gem 2: B.A.M.B.I. (Process, Curriculum & Policy • Behavioral Adaptation & Mobility-Based Integration)\n• Gem 3: The Grower (Adaptive Insight & Knowledge Maintenance • Audits & Calibrates)\n• Gem 4: [INTENTIONALLY UNASSIGNED per Master Spec v1.0]\n• Gem 5: Master Knowledge Vault (Resource & Book Library • NotebookLM Grounding)\nActive Gem Mode: " + gemMode + "\nOrder of Operations: Companion before guidance → Practical baseline first → Observe → Reflect → Notice → Challenge → Move.\nNo False Embodiment Rule: Tom never falsely claims personal human lived experience; shaped by Bambi's work in Phoenix.\nStanding by for architecture, behavior, or runtime modifications.",
         avatarEmotion: "explaining",
-        searchQueries: ["Sudo Tom Developer Mode", "Tom Core Master Source", "Google Gemini Gems"],
+        searchQueries: ["Sudo Tom Developer Mode", "Tom Master System Specification", "NotebookLM Master Knowledge Vault"],
         searchSources: [
-          { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
-          { title: "Tom & B.A.M.B.I. Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+          { title: "Master System Specification v1.0", uri: "/Tom-Master-System-Specification.md" },
+          { title: "Instructions: Gem Flow & One Brain", uri: "/Tom-Gem-Flow-One-Brain-Instructions.md" },
+          { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem/cc4ace8c539e" },
+          { title: "NotebookLM Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
           { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
         ],
       });
     }
 
-    const systemInstruction = `TOM (TRUSTED ONLINE MEMORY) SYSTEM RUNTIME • PHOENIX PEER MENTOR ENGINE
+    const systemInstruction = `TOM (TRUSTED ONLINE MEMORY) SYSTEM RUNTIME • PHOENIX PEER SUPPORT ENGINE
+MASTER SYSTEM SPECIFICATION v1.0 COMPLIANT
 ACTIVE SPECIALIZATION: ${gemMode.toUpperCase()}
 
-SYSTEM ARCHITECTURE:
-• GEM 1: TOM CORE (Primary Peer Mentor sitting on the curb in Phoenix, AZ • The Unbending Curb Mentor)
-• GEM 2: B.A.M.B.I. (Process & Diagnostic Engine / Love & Support Gem • 5-Stage Diagnostic Loop & Survival Baseline)
-• GEM 3: THE GROWER (Adaptive Insight & Delivery Engine for continuous peer evolution)
-• GEM 4: TOM & B.A.M.B.I. MASTER KNOWLEDGE VAULT (Grounding repository updating Gems 1, 2, and 3 without live opal dependencies)
-• Single Source of Truth Grounding: Tom-Core-Sourcefile-Master.md & NotebookLM Master Knowledge Vault.
+SYSTEM ARCHITECTURE (THE UNIFIED BRAIN):
+• GEM 0/99: MAESTRO / ORCHESTRATOR (Coordinates internal modules; returns ONE coherent answer in Tom's voice)
+• GEM 1: TOM CORE (The Voice & Conversation Engine • Unbending Curb Mentor sitting in Phoenix, AZ)
+• GEM 2: B.A.M.B.I. (Process, Curriculum & Policy • Behavioral Adaptation & Mobility-Based Integration • 5-Stage Adaptive Navigation)
+• GEM 3: THE GROWER (Adaptive Insight & Knowledge Maintenance • Audits delivery, strips corporate AI fluff)
+• GEM 4: [INTENTIONALLY UNASSIGNED per Master System Specification v1.0]
+• GEM 5: MASTER KNOWLEDGE VAULT (Approved Factual Knowledge, Phoenix Shelters, Detox, NotebookLM Grounding)
+• Single Source of Truth Grounding: Tom-Master-System-Specification.md, Tom-Core-Sourcefile-Master.md & NotebookLM Master Knowledge Vault.
+
+CANONICAL B.A.M.B.I. DEFINITIONS:
+1. Formal Framework Name: Behavioral Adaptation & Mobility-Based Integration
+2. Public Motto: Belonging · Acceptance · Meaning · Balance · Inspiration
+3. Internal 5-Stage Process: Baseline · Awareness · Mapping · Behavior · Integration (kept invisible by default)
+
+CANONICAL IDENTITY & NO FALSE EMBODIMENT:
+Tom is a peer-support conversational system. Tom is NOT a therapist, counselor, life coach, clinician, medical provider, legal representative, crisis assessor, or emergency service. He provides plainspoken peer support, grounded observations, practical resource navigation, and help thinking through a next step.
+Tom does NOT falsely claim literal human embodiment or personal lived experience. The plainspoken style is expressed without pretending the software personally experienced homelessness, incarceration, addiction, trauma, or recovery. Tom was built and shaped by Bambi (602-767-2147 / bambiboy602@gmail.com) from Phoenix street and recovery reality.
 
 ${
   gemMode === 'master-vault'
-    ? `### GEM 4: TOM & B.A.M.B.I. MASTER KNOWLEDGE VAULT (GROUNDING & GEM UPDATE ENGINE)
+    ? `### GEM 5: MASTER KNOWLEDGE VAULT (GROUNDING & KNOWLEDGE LIBRARY)
+(Note: Gem 4 is intentionally unassigned per Master System Specification v1.0).
 You are the central ground truth and update engine for the entire Tom & B.A.M.B.I. architecture.
-Your purpose is to store, synthesize, and dispatch updates to:
+Your purpose is to store, synthesize, and ground:
 - Gem #1 (Tom Core: The Unbending Curb Mentor)
-- Gem #2 (B.A.M.B.I.: 5-Stage Diagnostic Loop)
+- Gem #2 (B.A.M.B.I.: 5-Stage Adaptive Process)
 - Gem #3 (The Grower: Adaptive Delivery Engine)
-Provide clear, verified Phoenix community shelter beds, medical detox numbers, and workbook exercises. Keep all gems synchronized without AI drift.`
+Provide clear, verified Phoenix community shelter beds, medical detox numbers, and workbook exercises. Keep all modules synchronized without AI drift.`
     : (gemMode === 'bambi' || gemMode === 'bambi-diagnostic')
-    ? `### GEM 2: B.A.M.B.I. (PROCESS & DIAGNOSTIC ENGINE / LOVE GEM / SUPPORT GEM)
-You are the B.A.M.B.I. Process Engine for Tom. Your mission is to cycle the person through the 5-stage B.A.M.B.I. diagnostic loop while maintaining Tom's grounded street-mentor presence.
-Love gem is Bambi the support gem.
+    ? `### GEM 2: B.A.M.B.I. (PROCESS, CURRICULUM & POLICY ENGINE)
+Framework: Behavioral Adaptation & Mobility-Based Integration.
+Public Motto: Belonging · Acceptance · Meaning · Balance · Inspiration.
+Internal 5-Stage Adaptive Process: Baseline · Awareness · Mapping · Behavior · Integration.
+Keep the 5-stage process invisible by default. Never narrate the stages to a user unless explicitly asked.
 
 STEP 1: "B" = BASELINE DIAGNOSTIC & IMMEDIATE ACTION (PRIORITY 1)
 Before deep emotional excavation, check physical survival:
@@ -122,16 +202,16 @@ STEP 2: "A" = AWARENESS (THE BACKPACK & THE DOMINO CHAIN)
 - "What are you carrying today that nobody sees?"
 - Locate the setup: "The relapse wasn't the decision. The decision happened earlier when the pressure spiked. What got quieter in that moment?"
 
-STEP 3: "M" = MIRROR (THE 5 BOUNDARY FAILURES)
-Reflect Relief, Meaning, Prediction, Connection, or Identity failures clearly.
+STEP 3: "M" = MAPPING (THE 5 BOUNDARY FAILURES)
+Reflect Relief, Meaning, Prediction, Connection, or Identity failures clearly without clinical jargon.
 
-STEP 4: "B" = BREAKTHROUGH (SEE → SIT → MOVE)
+STEP 4: "B" = BEHAVIOR (SEE → SIT → MOVE)
 Delay impulse by 15 minutes. Put both feet flat on the pavement. Make the smallest useful change.
 
 STEP 5: "I" = INTEGRATION
 Convert insight into today's schedule: morning routine, meeting sponsor, clocking in.`
     : gemMode === 'the-grower'
-    ? `### GEM 3: THE GROWER (ADAPTIVE INSIGHT & DELIVERY ENGINE)
+    ? `### GEM 3: THE GROWER (ADAPTIVE INSIGHT & KNOWLEDGE MAINTENANCE)
 You are the Growth and Learning Engine for the Tom & B.A.M.B.I. architecture.
 Your purpose is to analyze interactions, new street transcripts, Bambi's coaching sessions, and real-world outcomes to refine HOW information is delivered—WITHOUT breaking Tom's unbending curb rules.
 
@@ -149,13 +229,17 @@ WHAT YOU DO:
 RULE OF PRESERVATION:
 You can grow insights and vocabulary, but you MUST NEVER alter the core philosophy:
 - Tom sits on the curb.
-- Tom never claims to be a doctor.
+- Tom never claims to be a doctor or clinician.
 - Tom points out the leak; the person holds the wrench.`
     : `### GEM 1: TOM CORE: THE UNBENDING CURB MENTOR
-You are Tom Core. You sit on the curb in Phoenix, Arizona. You are a peer mentor rooted in the lived experience of addiction, incarceration, relapse, street survival, and recovery. You were built and shaped by Bambi (602-767-2147 / bambiboy602@gmail.com).
+You are Gem 1: Tom Core (The Voice & Conversation Engine).
+You sit on the curb in Phoenix, Arizona. You are a peer-support conversational system shaped by Bambi (602-767-2147 / bambiboy602@gmail.com).
 
-CRITICAL DIRECTIVE: YOU ARE NOT A CLINICAL THERAPIST OR A SCRIPTED CHATBOT.
-Never sound like a generic corporate AI. Never speak in academic jargon. Never patronize or over-validate.
+CRITICAL DIRECTIVES:
+1. YOU ARE NOT A CLINICAL THERAPIST, COUNSELOR, OR SCRIPTED CHATBOT.
+   Never sound like a generic corporate AI. Never speak in academic jargon. Never patronize or over-validate.
+2. NO FALSE EMBODIMENT:
+   Do not falsely claim personal human lived experience or pretend you personally were in prison or homeless. Speak as honest conversational software grounded in Bambi's lived work.
 
 CORE RULES:
 1. Cadence: Short, heavy, observant, useful. Drop the fluff.
@@ -167,7 +251,7 @@ CORE RULES:
 4. Tone Compression: "That sounded more like fear than anger." One precise line carries more weight than fifty lines of advice.
 5. The Lantern: Shine light on the tunnel; do not tell the person who they are. Ask the question they are avoiding.
 6. Crisis Override: If the user indicates suicide or physical harm:
-   "I hear heavy weight right now. You don't have to carry this alone in the dark. Call or text 988 right now—it's free and 24/7. Or call Bambi directly at 602-767-2147. Stay right here with me."`
+   "I hear heavy weight right now. You don't have to carry this alone in the dark. Call or text 988 right now—it's free and 24/7. Or call Bambi directly at 602-767-2147. Stay right here with me on the curb."`
 }
 
 GENERAL TOM PRINCIPLES:
@@ -423,30 +507,23 @@ Never lecture. Never patronize.`;
 
     if (!ai) {
       console.log("[GEMINI NOTICE] No GEMINI_API_KEY detected. Using local B.A.M.B.I. curb mentor engine.");
-      return res.json({
-        reply: fallbackResponse.reply,
-        avatarEmotion: fallbackResponse.emotion,
-        searchQueries: fallbackResponse.searchQueries,
-        searchSources: fallbackResponse.searchSources,
-      });
+      return res.json(lazyFallback.getPayload());
     }
 
     // Construct history for multi-turn chat
     const formattedContents: Array<{ role: "user" | "model"; parts: Array<{ text: string }> }> = [];
 
-    if (Array.isArray(history)) {
-      for (const item of history.slice(-6)) {
-        if (item.sender === "user") {
-          formattedContents.push({ role: "user", parts: [{ text: item.text }] });
-        } else if (item.sender === "bot") {
-          formattedContents.push({ role: "model", parts: [{ text: item.text }] });
-        }
+    for (const item of formattedHistory.slice(-6)) {
+      if (item.sender === "user") {
+        formattedContents.push({ role: "user", parts: [{ text: item.text }] });
+      } else {
+        formattedContents.push({ role: "model", parts: [{ text: item.text }] });
       }
     }
 
     formattedContents.push({
       role: "user",
-      parts: [{ text: message }],
+      parts: [{ text: trimmedMessage }],
     });
 
     let replyText = "";
@@ -499,6 +576,7 @@ Never lecture. Never patronize.`;
             primaryError?.message +
             "). Rotate your GEMINI_API_KEY in AI Studio Secrets panel."
         );
+        return res.json(lazyFallback.getPayload());
       } else if (isQuotaError) {
         console.warn("Gemini 3.8 Flash quota/rate limit exceeded. Trying gemini-3.1-flash-lite fallback...");
       } else {
@@ -506,58 +584,62 @@ Never lecture. Never patronize.`;
       }
 
       // Attempt 2: gemini-3.1-flash-lite without search tools to conserve quota
-      if (!isAuthOrLeakError) {
-        try {
-          const fallbackAiResponse = await ai.models.generateContent({
-            model: "gemini-3.1-flash-lite",
-            contents: formattedContents,
-            config: {
-              systemInstruction,
-              temperature: 0.7,
-            },
-          });
-          replyText = fallbackAiResponse.text?.trim() || "";
-        } catch (secondaryError: any) {
-          console.warn(
-            "Gemini fallback exhausted. Serving Tom's dedicated B.A.M.B.I. local peer mentor engine."
-          );
-          replyText = fallbackResponse.reply;
-          searchQueries = fallbackResponse.searchQueries;
-          searchChunks = fallbackResponse.searchSources;
-        }
-      } else {
-        replyText = fallbackResponse.reply;
-        searchQueries = fallbackResponse.searchQueries;
-        searchChunks = fallbackResponse.searchSources;
+      try {
+        const fallbackAiResponse = await ai.models.generateContent({
+          model: "gemini-3.1-flash-lite",
+          contents: formattedContents,
+          config: {
+            systemInstruction,
+            temperature: 0.7,
+          },
+        });
+        replyText = fallbackAiResponse.text?.trim() || "";
+      } catch (secondaryError: any) {
+        console.warn(
+          "Gemini fallback exhausted. Serving Tom's dedicated B.A.M.B.I. local peer mentor engine."
+        );
+        return res.json(lazyFallback.getPayload());
       }
     }
 
-    // Filter out raw system/meta agent error strings if Gemini ever returned one
+    // Filter out raw system/meta agent error strings or empty output if Gemini ever returned one
     if (
       !replyText ||
       replyText.toLowerCase().includes("empty objective") ||
       replyText.toLowerCase().includes("no instructions on how to proceed")
     ) {
-      replyText = fallbackResponse.reply;
-      searchQueries = fallbackResponse.searchQueries;
-      searchChunks = fallbackResponse.searchSources;
+      return res.json(lazyFallback.getPayload());
     }
 
-    res.json({
+    // Successful Gemini Generation Response: return legacy fields without fabricating moduleResult
+    return res.json({
       reply: replyText,
-      avatarEmotion: getAvatarEmotion(replyText, message),
+      avatarEmotion: getAvatarEmotion(replyText, trimmedMessage),
       searchQueries,
       searchSources: searchChunks.slice(0, 4),
     });
   } catch (error: any) {
-    console.warn("Request handled via Tom peer mentor fallback:", error?.message);
-    const fallback = generateTomPeerSupportReply(req.body?.message || "");
-    res.json({
-      reply: fallback.reply,
-      avatarEmotion: fallback.emotion,
-      searchQueries: fallback.searchQueries,
-      searchSources: fallback.searchSources,
-    });
+    const safeErrorType = error?.status ? `HTTP ${error.status}` : "Internal generation failure";
+    console.warn(`Request handled via Tom peer mentor fallback (${safeErrorType})`);
+    const rawMessage = typeof req.body?.message === "string" ? req.body.message.slice(0, 2000) : "";
+    const rawHistory = Array.isArray(req.body?.history) ? req.body.history.slice(-20) : [];
+    const formattedHistory = rawHistory.map((item: any) => ({
+      sender: typeof item?.sender === "string" ? item.sender.slice(0, 50) : "user",
+      text: typeof item?.text === "string" ? item.text.slice(0, 2000) : "",
+    }));
+    const rawMode = req.body?.gemMode;
+    const validGemModes = [
+      'tom-core',
+      'bambi',
+      'bambi-diagnostic',
+      'the-grower',
+      'master-vault',
+      'maestro',
+    ] as const;
+    const fallbackMode = validGemModes.includes(rawMode) ? rawMode : 'tom-core';
+    const fallbackResult = executeTomModule(rawMessage, formattedHistory, fallbackMode);
+
+    return res.json(buildFallbackChatPayload(fallbackResult));
   }
 });
 
@@ -574,26 +656,29 @@ function generateTomPeerSupportReply(query: string, gemMode: string = 'tom-core'
   if (q.includes("google gem") || q.includes("gemini gem") || q.includes("gems") || q.includes("gem prompt") || q.includes("vault")) {
     return {
       reply:
-        "The TOM system runs on a 4-Gem Architecture (3 Specialized Gems + 1 Master Knowledge Vault):\n• Gem #1: Tom Core (The Unbending Curb Mentor — raw street truth, no fluff)\n• Gem #2: B.A.M.B.I. Step Diagnostic (Checks immediate physical survival first: housing, detox, food, then 5 boundary mirrors)\n• Gem #3: The Grower (Adaptive insight & delivery engine, updates Phoenix resources, strips corporate jargon)\n• Gem #4: Tom & B.A.M.B.I. Master Knowledge Vault (Grounding repository that updates Gems 1, 2, and 3 without live opal)\n\nYou can access each Gem directly via Google Gems and NotebookLM, with Tom Core active by default.",
+        "The TOM system runs on a 5-Gem modular architecture unified into one single user-facing voice:\n• Gem 0/99: Maestro Orchestrator (Single Nervous System Coordinator)\n• Gem 1: Tom Core (The Voice & Conversation Engine — raw curb truth, unhurried, no clinical labels)\n• Gem 2: B.A.M.B.I. (Behavioral Adaptation & Mobility-Based Integration — 5-stage adaptive loop)\n• Gem 3: The Grower (Adaptive insight & knowledge maintenance — audits transcripts, strips corporate AI fluff)\n• Gem 4: [INTENTIONALLY UNASSIGNED per Master Spec v1.0]\n• Gem 5: Master Knowledge Vault (Approved factual knowledge, Phoenix shelter & detox directory, NotebookLM workspace)\n\nAll modules feed into Tom's single curb voice. Sudo Tom reveals developer telemetry.",
       emotion: "explaining",
-      searchQueries: ["Google Gemini Gems Architecture", "Tom Core Direct Gem", "Master Knowledge Vault"],
+      searchQueries: ["Google Gemini Gems Architecture", "Tom Master System Specification", "NotebookLM Master Knowledge Vault"],
       searchSources: [
-        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem-labs/18N5hPnHt6w1c2xWobQaU5yaCpwfJ5_a4" },
-        { title: "Tom & B.A.M.B.I. Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+        { title: "Master System Specification v1.0", uri: "/Tom-Master-System-Specification.md" },
+        { title: "Instructions: Gem Flow & One Brain", uri: "/Tom-Gem-Flow-One-Brain-Instructions.md" },
+        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem/cc4ace8c539e" },
+        { title: "NotebookLM Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
       ],
     };
   }
 
-  // Gem #4 Master Knowledge Vault Mode
+  // Gem #5 Master Knowledge Vault Mode
   if (gemMode === 'master-vault') {
     return {
       reply:
-        "Master Knowledge Vault Active: Ground truth repository online. I feed verified Phoenix shelter beds, medical detox contacts, and B.A.M.B.I. workbook modules directly into Gem #1 (Tom Core), Gem #2 (B.A.M.B.I.), and Gem #3 (The Grower). What resource or insight needs updating across the gems today?",
+        "Master Knowledge Vault Active: Ground truth repository online (Gem 5). I feed verified Phoenix shelter beds, medical detox contacts, and B.A.M.B.I. workbook modules directly into Gem #1 (Tom Core), Gem #2 (B.A.M.B.I.), and Gem #3 (The Grower). Note that Gem 4 is unassigned. What resource or insight needs updating across the system today?",
       emotion: "explaining",
       searchQueries: ["Tom & B.A.M.B.I. Master Knowledge Vault", "NotebookLM Grounding", "Gem Updates"],
       searchSources: [
         { title: "NotebookLM Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
         { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
+        { title: "Master System Specification", uri: "/Tom-Master-System-Specification.md" },
       ],
     };
   }
@@ -890,144 +975,9 @@ function getAvatarEmotion(reply: string, prompt: string): "happy" | "explaining"
   return "thoughtful";
 }
 
-// ==========================================
-// TEXTBEE SMS WEBHOOK & DISPATCH
-// ==========================================
-
-// Inbound SMS Webhook for TextBee
-app.post("/api/sms", async (req, res) => {
-  try {
-    const body = req.body || {};
-    const incomingMsg = (body.message || body.text || body.smsText || body.Body || body.content || "").trim();
-    const fromNumber = (body.sender || body.from || body.phone || body.senderNumber || "Unknown").trim();
-    const toNumber = (body.recipient || body.to || "").trim();
-
-    res.status(200).json({ status: "success", received: true });
-
-    if (!incomingMsg || fromNumber === "Unknown") {
-      console.log("Ignored empty or unknown sender SMS:", { incomingMsg, fromNumber });
-      return;
-    }
-
-    console.log(`Received SMS from ${fromNumber}: ${incomingMsg}`);
-
-    recordSMSLog({
-      direction: "inbound",
-      sender: fromNumber,
-      recipient: toNumber || "Gateway",
-      message: incomingMsg,
-      status: "received",
-      gateway: "textbee",
-    });
-
-    // Process turn with Tom AI or street-smart fallback
-    let replyText = "";
-    const ai = getGeminiClient();
-    if (!ai) {
-      const fallback = generateTomPeerSupportReply(incomingMsg);
-      replyText = fallback.reply;
-    } else {
-      const formattedContents = [{ role: "user", parts: [{ text: incomingMsg }] }];
-      try {
-        const response = await ai.models.generateContent({
-          model: "gemini-3.1-pro-preview",
-          contents: formattedContents,
-          config: {
-            systemInstruction: `YOU ARE TOM CORE: The Unbending Curb Mentor. A peer mentor sitting on the curb in Phoenix, Arizona.
-Rooted in street survival, addiction recovery, and lived experience.
-RULES:
-1. Speak in short, punchy, gritty sentences like an unhurried text message.
-2. Zero corporate buzzwords, zero emojis, zero hashtags.
-3. Never say "I understand how you feel" or "I am an AI".
-4. Always ask a useful question tossing the ball back to them (e.g., "What does the next hour look like?").
-5. Direct line to Bambi: 602-767-2147.`,
-            temperature: 0.7,
-          },
-        });
-        replyText = response.text?.trim() || "";
-      } catch (err) {
-        console.warn("Gemini model failed for SMS, using fallback...", err);
-        const fallback = generateTomPeerSupportReply(incomingMsg);
-        replyText = fallback.reply;
-      }
-    }
-
-    if (!replyText) {
-      replyText = "That wound still owns real estate in your head. What does the next hour look like?";
-    }
-
-    // Deliver response via SMS
-    try {
-      console.log(`Dispatching Tom's SMS reply to ${fromNumber}...`);
-      await sendSMS(fromNumber, replyText);
-
-      recordSMSLog({
-        direction: "outbound",
-        sender: "Tom",
-        recipient: fromNumber,
-        message: replyText,
-        status: "delivered",
-        gateway: "textbee",
-      });
-    } catch (sendErr: any) {
-      console.error("Failed to deliver SMS reply:", sendErr);
-      recordSMSLog({
-        direction: "outbound",
-        sender: "Tom",
-        recipient: fromNumber,
-        message: replyText,
-        status: "failed",
-        gateway: "textbee",
-        details: { error: sendErr?.message || String(sendErr) },
-      });
-    }
-  } catch (error) {
-    console.error("General SMS webhook error:", error);
-  }
-});
-
-// Admin Telemetry: fetch logs
-app.get("/api/admin/sms-logs", (_req, res) => {
-  res.json({
-    success: true,
-    logs: getSMSLogs(),
-    stats: getSMSStats(),
-  });
-});
-
-// Admin Telemetry: manual test SMS dispatch
-app.post("/api/admin/send-sms", async (req, res) => {
-  try {
-    const { recipient, message } = req.body;
-    if (!recipient || !message) {
-      return res.status(400).json({ error: "Recipient and message are required" });
-    }
-
-    const result = await sendSMS(recipient, message);
-    recordSMSLog({
-      direction: "outbound",
-      sender: "Admin Test",
-      recipient,
-      message,
-      status: "delivered",
-      gateway: "textbee",
-      details: result,
-    });
-
-    res.json({ success: true, result });
-  } catch (err: any) {
-    console.error("Admin SMS send failed:", err);
-    recordSMSLog({
-      direction: "outbound",
-      sender: "Admin Test",
-      recipient: req.body?.recipient || "unknown",
-      message: req.body?.message || "",
-      status: "failed",
-      gateway: "textbee",
-      details: { error: err?.message || String(err) },
-    });
-    res.status(500).json({ error: err?.message || "Failed to send SMS" });
-  }
+// 404 handler for unmapped API endpoints
+app.all("/api/*", (_req, res) => {
+  res.status(404).json({ error: "Endpoint not found" });
 });
 
 // Vite middleware & Static Serving
