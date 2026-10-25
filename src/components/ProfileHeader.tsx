@@ -11,6 +11,7 @@ import {
   Sparkles,
   ExternalLink,
   BookOpen,
+  Phone,
 } from 'lucide-react';
 import { TomBotCard } from './TomBotCard';
 import { OFFICIAL_TOM_GEM_URL, NOTEBOOK_LLM_URL } from '../data/googleGemsData';
@@ -237,9 +238,38 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     Medically supervised detox, AHCCCS 25-day beds, and intensive residential recovery.
                   </p>
                 </div>
-                <div className="mt-3 pt-2.5 border-t border-stone-100 dark:border-stone-700/60 flex items-center justify-between text-[11px] text-stone-500">
-                  <span className="font-semibold text-rose-600 dark:text-rose-400">Direct Intake Line</span>
-                  <span>602-767-2147</span>
+                {/* 3 Treatment Links: Granite Mountain Behavioral, 6027672147 Bambi, Axiom Care */}
+                <div className="mt-3 pt-2.5 border-t border-stone-100 dark:border-stone-700/60 flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <a
+                    href="https://granitemountainbhc.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/80 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-800 dark:text-rose-200 text-[10.5px] font-bold border border-rose-200 dark:border-rose-800 transition-colors shadow-2xs"
+                    title="Granite Mountain Behavioral Healthcare"
+                  >
+                    <ExternalLink className="w-2.5 h-2.5 text-rose-600" />
+                    <span>Granite Mountain Behavioral</span>
+                  </a>
+
+                  <a
+                    href="tel:6027672147"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-100 dark:bg-rose-900/90 hover:bg-rose-200 dark:hover:bg-rose-800 text-rose-900 dark:text-rose-100 text-[10.5px] font-bold border border-rose-300 dark:border-rose-700 transition-colors shadow-2xs"
+                    title="Call or Text Bambi: (602) 767-2147"
+                  >
+                    <Phone className="w-2.5 h-2.5 text-rose-600 dark:text-rose-300" />
+                    <span>6027672147 Bambi</span>
+                  </a>
+
+                  <a
+                    href="https://axiomcareaz.org"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/80 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-800 dark:text-rose-200 text-[10.5px] font-bold border border-rose-200 dark:border-rose-800 transition-colors shadow-2xs"
+                    title="Axiom Care Medical Detox & Recovery"
+                  >
+                    <ExternalLink className="w-2.5 h-2.5 text-rose-600" />
+                    <span>Axiom Care</span>
+                  </a>
                 </div>
               </div>
 

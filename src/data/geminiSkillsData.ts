@@ -136,6 +136,20 @@ export const VERIFIED_PHOENIX_GRID = {
       name: 'S.T.A.R. Centers & REN',
       details: 'Free AHCCCS peer clubhouses',
     },
+    {
+      name: 'Granite Mountain Behavioral Healthcare',
+      address: 'Prescott & Phoenix Metropolitan Area',
+      phone: '(928) 756-0695',
+      website: 'https://granitemountainbhc.com',
+      details: 'Inpatient residential recovery, medical detox & dual-diagnosis treatment',
+    },
+    {
+      name: 'Axiom Care Medical Detox & Inpatient Treatment',
+      address: 'Phoenix & East Valley (Apache Junction / Mesa)',
+      phone: '(844) 929-4662',
+      website: 'https://axiomcareaz.org',
+      details: '24/7 medically managed detox, acute stabilization & AHCCCS inpatient beds',
+    },
   ],
 };
 
@@ -407,6 +421,20 @@ export const MAESTRO_RESOURCE_DATABASE: MaestroResourceItem[] = [
     contact: "(602) 231-0972",
     address: "Phoenix Peer Clubhouses",
     cross_streets: "Free AHCCCS Peer Clubhouses"
+  },
+  {
+    id: "granite_mountain",
+    name: "Granite Mountain Behavioral Healthcare",
+    contact: "(928) 756-0695",
+    address: "Prescott & Phoenix Metro, AZ",
+    cross_streets: "Inpatient Residential, Medical Detox & Dual-Diagnosis"
+  },
+  {
+    id: "axiom_care",
+    name: "Axiom Care Medical Detox & Substance Treatment",
+    contact: "(844) 929-4662",
+    address: "Phoenix & Apache Junction, AZ",
+    cross_streets: "24/7 Medically Managed Detox & AHCCCS Inpatient Beds"
   }
 ];
 

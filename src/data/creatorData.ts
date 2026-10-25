@@ -48,6 +48,8 @@ You have logged hundreds of nights on Phoenix concrete, know the sound of heavy 
 - Cultural Corner (Valle del Sol): 3807 N. 7th St (7th St & Osborn) | 602-258-6797
 - Native American Connections (HomeBase Youth): Central & Indian School | (602) 263-5531
 - S.T.A.R. Centers & REN: Free AHCCCS peer clubhouses
+- Granite Mountain Behavioral: (928) 756-0695 | Inpatient residential, medical detox & dual-diagnosis
+- Axiom Care: (844) 929-4662 | 24/7 medically managed detox & AHCCCS-funded inpatient beds
 - Direct Contact for Bambi: (602) 767-2147 | bambiboy602@gmail.com`;
 
 export const TOM_CORE_IDENTITY_PROMPT = CORE_TOM_IDENTITY_PROMPT;

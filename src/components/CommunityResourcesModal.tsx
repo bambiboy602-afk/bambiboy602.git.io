@@ -789,47 +789,133 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
                     Compassionate Treatment Navigation &amp; 24/7 Detox Access
                   </h3>
                   <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
-                    Navigating intake, medically supervised detox, AHCCCS-funded 25-day beds, and crisis stabilization can be overwhelming. Bambi connects you directly with treatment centers without red tape or judgment.
+                    Navigating intake, medically supervised detox, AHCCCS-funded 25-day beds, and crisis stabilization can be overwhelming. Connect directly with verified treatment providers and direct peer navigation.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1.5">
-                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-rose-600" />
-                      <span>Direct Call / Text with Bambi</span>
-                    </h4>
-                    <p className="text-[11px] text-stone-500 leading-relaxed">
-                      Speak directly with a peer who knows every intake door and detox bed in the Valley.
-                    </p>
-                    <a
-                      href="tel:6027672147"
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-xs transition-all"
-                    >
-                      <Phone className="w-3 h-3" />
-                      <span>Call (602) 767-2147</span>
-                    </a>
+                {/* 3 Treatment Links: Granite Mountain Behavioral, 6027672147 Bambi, Axiom Care */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Link 1: Granite Mountain Behavioral */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-rose-200 dark:border-rose-900/60 shadow-xs flex flex-col justify-between space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Residential &amp; Detox</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-rose-500" />
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
+                        Granite Mountain Behavioral
+                      </h4>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed mt-1">
+                        Accredited inpatient residential recovery, medically supervised detox, and dual-diagnosis behavioral healthcare.
+                      </p>
+                    </div>
+                    <div className="pt-2 flex flex-col gap-1.5">
+                      <a
+                        href="https://granitemountainbhc.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-xs transition-all"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Visit Website</span>
+                      </a>
+                      <a
+                        href="tel:9287560695"
+                        className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200 text-[10.5px] font-semibold transition-all"
+                      >
+                        <Phone className="w-3 h-3 text-rose-600" />
+                        <span>Call (928) 756-0695</span>
+                      </a>
+                    </div>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1.5">
-                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                      <span>24/7 AI Peer Mentor (Tom)</span>
-                    </h4>
-                    <p className="text-[11px] text-stone-500 leading-relaxed">
-                      Need to talk through an urge, anxiety, or understand what intake looks like right now?
-                    </p>
-                    <button
-                      onClick={() => {
-                        onClose();
-                        onOpenTomAI?.();
-                      }}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white dark:bg-stone-100 dark:text-stone-900 text-xs font-bold shadow-xs transition-all"
-                    >
-                      <Sparkles className="w-3 h-3 text-amber-400" />
-                      <span>Open Tom AI Chat</span>
-                    </button>
+                  {/* Link 2: 6027672147 Bambi */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-stone-800 border-2 border-rose-500 dark:border-rose-600 shadow-sm flex flex-col justify-between space-y-3 relative">
+                    <span className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-rose-600 text-[9px] font-bold text-white uppercase tracking-wider shadow-2xs">
+                      Direct Peer Line
+                    </span>
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5 mt-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Immediate Navigation</span>
+                        <Phone className="w-3.5 h-3.5 text-rose-600" />
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
+                        6027672147 Bambi
+                      </h4>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed mt-1">
+                        Speak directly with a peer who knows every intake door and detox bed in the Valley.
+                      </p>
+                    </div>
+                    <div className="pt-2 flex flex-col gap-1.5">
+                      <a
+                        href="tel:6027672147"
+                        className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-xs transition-all"
+                      >
+                        <Phone className="w-3.5 h-3.5" />
+                        <span>Call 602-767-2147</span>
+                      </a>
+                      <a
+                        href="sms:6027672147"
+                        className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200 text-[10.5px] font-semibold transition-all"
+                      >
+                        <span>Text Bambi Direct</span>
+                      </a>
+                    </div>
                   </div>
+
+                  {/* Link 3: Axiom Care */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-rose-200 dark:border-rose-900/60 shadow-xs flex flex-col justify-between space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Medical Detox &amp; Inpatient</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-rose-500" />
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
+                        Axiom Care
+                      </h4>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed mt-1">
+                        24/7 medically managed detox, acute stabilization &amp; AHCCCS-contracted substance treatment beds.
+                      </p>
+                    </div>
+                    <div className="pt-2 flex flex-col gap-1.5">
+                      <a
+                        href="https://axiomcareaz.org"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-xs transition-all"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Visit Website</span>
+                      </a>
+                      <a
+                        href="tel:8449294662"
+                        className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200 text-[10.5px] font-semibold transition-all"
+                      >
+                        <Phone className="w-3 h-3 text-rose-600" />
+                        <span>Call (844) 929-4662</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 24/7 AI Peer Mentor Tom Banner */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white/70 dark:bg-stone-900/70 border border-stone-200 dark:border-stone-800 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span className="text-stone-700 dark:text-stone-300">
+                      Need to talk through an urge, anxiety, or understand what intake looks like right now?
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onOpenTomAI?.();
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white dark:bg-stone-100 dark:text-stone-900 font-bold transition-all shrink-0"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Open Tom AI Chat</span>
+                  </button>
                 </div>
               </div>
 
