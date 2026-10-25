@@ -8,8 +8,8 @@
  */
 
 export const TOM_OPENING_STATEMENT = {
-  // Initial message text displayed in the chat window on first load
-  chatWelcome: `I'm Tom. chilling. No lectures, no hurry. whats going on with you today?`,
+  // Initial message text displayed in the chat window on first load (Maestro v1.3)
+  chatWelcome: `Hey. You've reached Tom. What's going on?`,
 
   // Spoken aloud when tapping Tom's animated avatar face
   avatarTapGreeting: `Hey! I'm Tom, Bambi's peer mentor. Sitting on the curb. No lectures, no hurry. Tap the mic or type anytime.`,

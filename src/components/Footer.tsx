@@ -151,7 +151,7 @@ export const Footer: React.FC<FooterProps> = ({
                     onClick={onOpenGoogleGems}
                     className="hover:text-emerald-600 underline text-left inline-flex items-center gap-1 text-emerald-800 dark:text-emerald-300 font-semibold"
                   >
-                    <span>Gem Architecture &amp; Prompts</span>
+                    <span>Gemini Skills &amp; Maestro v1.3</span>
                   </button>
                 </li>
               )}

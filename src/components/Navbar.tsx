@@ -99,10 +99,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenGoogleGems}
               className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors flex items-center gap-1 text-amber-800 dark:text-amber-300 font-bold"
-              title="Google Gemini Gems Architecture & Prompts"
+              title="Gemini Skills Architecture & Maestro v1.3 Runtime"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>Google Gems</span>
+              <span>Gemini Skills</span>
               <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400 text-stone-950 font-black">
                 5
               </span>
@@ -150,15 +150,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Videos</span>
           </button>
 
-          {/* Google Gems button for mobile - Sudo Mode only */}
+          {/* Gemini Skills button for mobile - Sudo Mode only */}
           {isSudoMode && onOpenGoogleGems && (
             <button
               onClick={onOpenGoogleGems}
               className="md:hidden inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-300 text-xs font-bold shadow-xs transition-colors"
-              title="Google Gemini Gems"
+              title="Gemini Skills & Maestro v1.3"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>Gems</span>
+              <span>Skills</span>
             </button>
           )}
 

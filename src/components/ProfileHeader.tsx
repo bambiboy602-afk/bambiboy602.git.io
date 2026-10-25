@@ -328,7 +328,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     title="Open Master Knowledge Vault in Google NotebookLM"
                   >
                     <div className="text-[9.5px] font-bold text-blue-700 dark:text-blue-400 flex items-center justify-between">
-                      <span>Gem 5 Vault</span>
+                      <span>Skill 5 Vault</span>
                       <ExternalLink className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
                     </div>
                     <div className="text-[11px] font-bold text-stone-900 dark:text-stone-100 truncate">NotebookLM</div>
@@ -342,7 +342,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     className="w-full mt-2.5 py-1.5 rounded-xl bg-stone-200/80 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5"
                   >
                     <Sparkles className="w-3 h-3 text-amber-500" />
-                    <span>View Gem Prompts &amp; One Brain Orchestration</span>
+                    <span>View Gemini Skills &amp; Maestro v1.3 Runtime</span>
                   </button>
                 )}
               </div>

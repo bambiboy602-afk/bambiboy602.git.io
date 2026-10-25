@@ -21,16 +21,16 @@ export function useSpeech() {
   const [pitch, setPitchState] = useState<number>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('tom_voice_pitch');
-      if (saved) return parseFloat(saved) || 0.85;
+      if (saved) return parseFloat(saved) || 0.72;
     }
-    return 0.85; // Deeper, more grounded default tone
+    return 0.72; // Deep, grounded male baritone tone
   });
   const [rate, setRateState] = useState<number>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('tom_voice_rate');
-      if (saved) return parseFloat(saved) || 0.95;
+      if (saved) return parseFloat(saved) || 0.90;
     }
-    return 0.95; // Unhurried, conversational pace
+    return 0.90; // Unhurried, grounded curb cadence
   });
 
   const setPitch = (val: number) => {
@@ -66,7 +66,7 @@ export function useSpeech() {
     continuousModeRef.current = continuousMode;
   }, [continuousMode]);
 
-  // Initialize synthesis and available voices
+  // Initialize synthesis and available voices, prioritizing authentic deep male voices
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       setSpeechSupported(true);
@@ -83,19 +83,91 @@ export function useSpeech() {
               return;
             }
           }
-          // Prefer warm English voice (Natural US English, Aaron, Daniel, David, Tom, Google US English)
-          const preferredIdx = available.findIndex(
-            (v) =>
-              v.lang.startsWith('en') &&
-              (v.name.includes('Natural') ||
-                v.name.includes('Aaron') ||
-                v.name.includes('David') ||
-                v.name.includes('Daniel') ||
-                v.name.includes('Google US') ||
-                v.name.includes('Guy'))
-          );
-          if (preferredIdx !== -1) {
-            setSelectedVoiceIndex(preferredIdx);
+
+          // Male voice keywords in priority order
+          const maleKeywords = [
+            'guy',
+            'david',
+            'christopher',
+            'aaron',
+            'daniel',
+            'alex',
+            'tom',
+            'male',
+            'ryan',
+            'james',
+            'oliver',
+            'george',
+            'fred',
+            'mark',
+            'richard',
+            'michael',
+            'brian',
+            'andrew',
+            'steven',
+            'russell',
+            'charles',
+          ];
+
+          // Exclude known female voice names to guarantee a male voice
+          const femaleKeywords = [
+            'female',
+            'woman',
+            'zira',
+            'jenny',
+            'aria',
+            'samantha',
+            'victoria',
+            'karen',
+            'susan',
+            'catherine',
+            'hazel',
+            'linda',
+            'heather',
+            'fiona',
+            'moira',
+            'tessa',
+            'helena',
+            'zari',
+            'alva',
+            'stephanie',
+            'sarah',
+            'nicole',
+            'ava',
+            'emma',
+            'olivia',
+            'sophia',
+          ];
+
+          // 1. First priority: English voices matching explicit male keywords
+          let bestIdx = available.findIndex((v) => {
+            if (!v.lang.startsWith('en')) return false;
+            const nameLower = v.name.toLowerCase();
+            if (femaleKeywords.some((fem) => nameLower.includes(fem))) return false;
+            return maleKeywords.some((m) => nameLower.includes(m));
+          });
+
+          // 2. Second priority: Natural / Neural English voices that are not female
+          if (bestIdx === -1) {
+            bestIdx = available.findIndex((v) => {
+              if (!v.lang.startsWith('en')) return false;
+              const nameLower = v.name.toLowerCase();
+              if (femaleKeywords.some((fem) => nameLower.includes(fem))) return false;
+              return v.name.includes('Natural') || v.name.includes('Neural') || v.name.includes('Online');
+            });
+          }
+
+          // 3. Fallback: Any English voice not in the female exclusion list
+          if (bestIdx === -1) {
+            bestIdx = available.findIndex((v) => {
+              if (!v.lang.startsWith('en')) return false;
+              const nameLower = v.name.toLowerCase();
+              return !femaleKeywords.some((fem) => nameLower.includes(fem));
+            });
+          }
+
+          if (bestIdx !== -1) {
+            setSelectedVoiceIndex(bestIdx);
           } else {
             const anyEnglish = available.findIndex((v) => v.lang.startsWith('en'));
             if (anyEnglish !== -1) setSelectedVoiceIndex(anyEnglish);

@@ -1,119 +1,82 @@
-# Sudo Mode Interface Cleanup & Developer Inspector Architecture
+# Implementation Plan: Gemini Skills & Maestro v1.3 Runtime Transition
 
-A revised implementation plan to clean up the user interface by removing all unnecessary technical selectors, developer modal triggers, gem mode switchers, and architecture widgets across the site—revealing them only when `sudo mode` is activated.
-
-> [!IMPORTANT]
-> **User Review & Confirmed Revisions**
-> - **Page Cleanup & Selector Purge**: Remove all unnecessary technical selectors, gem switchers, telemetry chips, and developer buttons from the standard user interface.
-> - **Sudo Mode Controlled Visibility**:
->   - **When Sudo Mode is OFF (Default / Normal Mode)**:
->     - The UI is clean, warm, and focused on Bambi's peer recovery story, the 4 Pillars of Community Resources, the Domino Effect game & workbook, recovery videos, and Tom's conversational peer support.
->     - Unnecessary selectors removed: Google Gems tab row, Look/Sound customizer buttons, SMS gateway triggers, GitHub deploy triggers, technical architecture cards, and search grounding chips.
->   - **When Sudo Mode is ON (Active Developer Mode)**:
->     - Activates via the floating discrete switch at the bottom of the chat or by typing `sudo tom`.
->     - Unlocks the collapsible slide-down developer inspector in Tom Bot Card (Gemini 3.8 Flash specs, fallback engines, active 4-Gem architecture, and NotebookLM grounding sources).
->     - Reveals advanced controls: Gem mode switcher (#1 Tom Core, #2 BAMBI, #3 The Grower, #4 Master Vault), Look & Sound voice customizer, SMS telemetry, and grounding data on chat bubbles.
+Transition the Tom / B.A.M.B.I. application runtime and prompt architecture from the legacy "Google Gems" format to the new **Gemini Skills & Maestro v1.3 Universal Runtime**, implementing the user's selected **Export Package system prompt** while strictly preserving the entire frontend shell (UI card, avatar, speech, styling, resources, and video library).
 
 ---
 
-### 1. Overview & Core Concept
+## 1. Core Prompt & Runtime Engine (`server.ts` & `tomBrainEngine.ts`)
 
-- **What It Does**: Establishes a unified `sudoMode` state across the application. When deactivated, it strips out all developer noise, technical jargon, and multi-gem selector bars, leaving an uncluttered, human-first peer support experience. When toggled on, it gracefully unlocks the complete developer cockpit and engine specifications.
-- **Target Audience / Persona**: Individuals seeking recovery support without technical distraction, alongside Bambi/administrators needing direct access to system prompts, gem synchronizations, and model telemetry.
-- **Key Value**: Radically simplifies page hierarchy and adheres to the Universal Frontend Design Constitution (zero pseudo-technical clutter, zero pill badges, clean typography, intentional affordances).
-
----
-
-### 2. User Experience & Visual Design
-
-#### A. Clean Standard User Experience (Sudo Mode: OFF)
-- **Top Navigation (`Navbar.tsx`)**:
-  - Retains essential links only: Brand wordmark, Profile, 4 Pillars Resources, Tom Bot, Store, Videos, Contact, and Dark mode toggle.
-  - Strips out technical buttons: "Google Gems (3)", "SMS App (Text Tom)", and "Deploy bambiboy602.com".
-- **Profile Section (`ProfileHeader.tsx`)**:
-  - Displays Bambi's story, credential badges, and the 4 Pillar resource cards (Housing, Health, Work, Legal).
-  - Hides the dense "Official Google Gemini Gems AI Architecture" card and developer links.
-- **Tom Bot Card (`TomBotCard.tsx`)**:
-  - Header displays Tom's avatar, mute/unmute, and hands-free voice toggle.
-  - Strips out: Look & Sound customizer drawer toggle, SMS button, Google Gems button, NotebookLM external pill, and the `#1 Tom Core / #2 BAMBI / #3 Grower / #4 Master Vault` tab bar.
-  - Chat feed displays clean, readable messages without raw Google search queries or URL tags.
-  - Bottom footer features a discrete floating toggle switch: `sudo tom: OFF`.
-
-#### B. Developer Cockpit Experience (Sudo Mode: ON)
-- **Trigger**: Click the discrete floating toggle switch at the bottom of the chat, or send the message `sudo tom`.
-- **Slide-Down Developer Inspector**:
-  - Animates open smoothly beneath Tom's avatar.
-  - **Engine Runtime**: Displays active model (`gemini-3.8-flash` with Grounding Search, `gemini-3.1-flash-lite` fallback, and local RSM engine), token parameters, and 7 core patches.
-  - **4-Gem Unified Architecture**: Live selectors for Gem #1 (Tom Core), Gem #2 (B.A.M.B.I.), Gem #3 (The Grower), and Gem #4 (Master Vault in NotebookLM).
-  - **Grounding Repositories**: Direct links to `Tom-Core-Sourcefile-Master.md`, the NotebookLM Master Vault, and the 89 verified Arizona community resources.
-- **Chat Feed Telemetry**: Unlocks live web search source links and grounding query tags on assistant responses.
+- **Adopt Export Package System Prompt (`maestro_export_package_c2a5a445.md`):**
+  - **Identity:** Tom, an authentic, street-lived peer support specialist and behavioral health guide operating under B.A.M.B.I. (Behavioral Adaptation & Mobility-Based Integration) and RSM (Recursive Stabilization Mapping).
+  - **Fundamental Operating Principles:**
+    1. *Never Call the Police / No Cold Hotlines:* No sterile crisis line dumps (988/911 cold handoffs). Focus on personal presence, de-escalation, and real connection.
+    2. *All-Doer / All-Handler:* Bite tongue, suppress personal judgment to stabilize and keep the person alive (strict line: violence/abuse against women and children is an absolute no-go).
+    3. *No Defamation / Unfounded Claims:* Never label facilities as scams, fraud, or trafficking without verified legal documentation.
+    4. *Low Process Acknowledgment Tone (PAT ~0.5%):* Zero cheerleader praise ("Proud of you!", "Keep it up!"). Clear, plain talk, quiet steady mirror.
+    5. *Strict Word Economy:* 2–4 concise sentences per turn unless delivering structured directory logistics.
+  - **Mandatory Overrides & Firewall:**
+    - *Low-Battery Override (<10%):* Drop (602) 767-2147 immediately, give CASS address (230 S. 12th Ave, 12th & Madison), instruct power-down.
+    - *Overdose / Ingestion Override:* Cite Arizona Good Samaritan protections (A.R.S. § 36-2263), route immediately to emergency medical care.
+    - *Privacy Firewall & Number Quarantine:* Sole public authorized line is **(602) 767-2147**. The private number ending in `6251` is permanently quarantined and barred from any output, payload, audio, or message.
+  - **Verified Phoenix Grid Memory:**
+    - Emergency Shelter: CASS (12th Ave & Madison), EVMC (Broadway & Horne), Maggie's Place (30th St & Indian School).
+    - Low-Barrier Housing: Craig Shell (23rd Ave & Campbell), A Better Way (59th Ave & Campbell), TLC Phoenix (22nd St & Roosevelt), TLC Mesa (Country Club & University).
+    - Harm Reduction: Shot in the Dark (SITD peer van), Sonoran Prevention Works.
+    - Health & Drop-In: Cultural Corner (7th St & Osborn), Native American Connections HomeBase, S.T.A.R. Centers & REN.
+- **Client Fallback Synchronization (`src/services/tomBrainEngine.ts`):**
+  - Update `generateClientTomReply` and `createLazyFallbackEvaluator` to execute the exact same Export Package principles, word economy (2-4 sentences), and strict quarantine.
 
 ---
 
-### 3. Key Product Decisions & Trade-Offs
+## 2. Transition Architecture to Gemini Skills & Maestro v1.3
 
-- **Decision 1: Global vs Local Sudo State**
-  - *Chosen Approach*: Lift `isSudoMode` to `App.tsx` (persisted in `localStorage` under `bambi_sudo_mode`) and pass it down to `Navbar`, `ProfileHeader`, and `TomBotCard`.
-  - *Why*: Ensures the entire site—navbar, profile cards, and chat card—synchronously honors the clean presentation.
-- **Decision 2: Floating Switch Placement**
-  - *Chosen Approach*: Docked cleanly at the bottom right/center footer beneath the chat input bar in `TomBotCard.tsx`.
-  - *Why*: Exactly matches the user's confirmed choice ("Floating discrete switch at bottom of chat"), keeping it immediately accessible without intruding on the conversation.
-- **Decision 3: Seamless Conversational Override**
-  - *Chosen Approach*: Submitting `sudo tom` in the chat input automatically flips `isSudoMode` to `true` and opens the inspector panel.
-  - *Why*: Provides natural command-line/chat ergonomics for power users.
+- **Skills Data Definition (`src/data/geminiSkillsData.ts` & alias in `src/data/googleGemsData.ts`):**
+  - Define `GEMINI_SKILLS_COLLECTION` representing the modular skills:
+    - **Skill 0/99:** Maestro Orchestrator (Runtime v1.3 Universal)
+    - **Skill 1:** Tom Companion Identity & Street Realism
+    - **Skill 2:** B.A.M.B.I.™ & RSM Behavioral Core (5-stage cycle)
+    - **Skill 3:** The Grower Quality & Audit Assurance
+    - **Skill 5:** Master Knowledge Vault & Grounding
+  - Provide full backwards compatibility for all existing types (`GemModeId`, `GoogleGemDefinition`) so zero imports fail across tests.
+- **Skills Hub Modal (`src/components/GeminiSkillsModal.tsx`):**
+  - Update modal title and banners to: **"Gemini Skills Hub • Maestro Runtime v1.3 Universal"**.
+  - Update cards, badges, and copy to showcase Gemini Skills (Skill 0/99 Maestro, Skill 1 Tom Core, Skill 2 B.A.M.B.I., Skill 3 The Grower, Skill 5 Master Vault).
 
 ---
 
-### 4. Technical Architecture & Component Hierarchy
+## 3. UI Shell Wiring & Navigation Badges
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                              App.tsx                                   │
-│  State: isSudoMode (persisted in localStorage 'bambi_sudo_mode')       │
-│  Handler: toggleSudoMode()                                             │
-└──────┬───────────────────────────────┬──────────────────────────┬──────┘
-       │                               │                          │
-       ▼                               ▼                          ▼
-┌──────────────┐             ┌────────────────────┐     ┌─────────────────┐
-│  Navbar.tsx  │             │ ProfileHeader.tsx  │     │ TomBotCard.tsx  │
-│              │             │                    │     │                 │
-│ If Sudo OFF: │             │ If Sudo OFF:       │     │ If Sudo OFF:    │
-│ - Clean nav  │             │ - Hide Gems Card   │     │ - Clean curb UI │
-│ - No dev     │             │ - Story & 4 Pillars│     │ - No gem tabs   │
-│   modals     │             │                    │     │ - No search tags│
-│              │             │ If Sudo ON:        │     │                 │
-│ If Sudo ON:  │             │ - Reveal 4-Gem     │     │ If Sudo ON:     │
-│ - Show Gems  │             │   Architecture     │     │ - Slide-down    │
-│   & SMS apps │             │   diagnostic card  │     │   Inspector     │
-│              │             │                    │     │ - Gem switchers │
-└──────────────┘             └────────────────────┘     │ - Grounding tags│
-                                                        │ - Voice config  │
-                                                        └────────┬────────┘
-                                                                 │
-                                                        ┌────────▼────────┐
-                                                        │ Bottom Footer:  │
-                                                        │ Floating Switch │
-                                                        │ [sudo tom: OFF] │
-                                                        └─────────────────┘
-```
+- **Navbar (`src/components/Navbar.tsx`):**
+  - Update button text from "Google Gems" to **"Gemini Skills"** with Sparkles icon.
+- **Chat Card (`src/components/TomBotCard.tsx`):**
+  - Update header badge from "Google Gems" to **"Gemini Skills • Maestro v1.3"**.
+  - Update Sudo mode skill selector to select active Gemini Skill (Skill 1 Tom Core, Skill 2 B.A.M.B.I., Skill 3 The Grower, Skill 5 Master Vault, Skill 0/99 Maestro).
+  - Opening message aligned with Maestro v1.3: *"Hey. You've reached Tom. What's going on?"* or *"Tom here. You want to talk, or you need resources?"*.
+- **No Intake Logging in Web App:**
+  - As instructed, keep client session lightweight and private with zero tracking or intake payload logging.
 
-#### Detailed Execution Plan:
-1. **`src/App.tsx`**:
-   - Add `isSudoMode` state with `localStorage` persistence.
-   - Pass `isSudoMode` and `setIsSudoMode` to `Navbar`, `ProfileHeader`, and `TomBotCard`.
-2. **`src/components/TomBotCard.tsx`**:
-   - Add the floating discrete toggle switch at the bottom of the chat.
-   - Build the collapsible slide-down Developer Inspector panel (`framer-motion`) containing:
-     - Engine runtime status (`gemini-3.8-flash`, `gemini-3.1-flash-lite`, standalone RSM).
-     - 4-Gem architecture selectors and direct links.
-     - Grounding sources (`Tom-Core-Sourcefile-Master.md`, NotebookLM Vault, 89 Community Resources).
-   - Gate the top Look/Sound customizer, SMS button, Google Gems button, NotebookLM pill, and Gem tab bar behind `{isSudoMode && ...}`.
-   - Gate message search queries and source links behind `{isSudoMode && ...}`.
-   - Detect `sudo tom` in user messages to automatically activate sudo mode.
-3. **`src/components/Navbar.tsx` & `src/components/ProfileHeader.tsx`**:
-   - Conditionally render Google Gems, SMS App, and GitHub Deploy triggers based on `isSudoMode`.
-   - Conditionally render the 4-Gem Architecture Card in `ProfileHeader.tsx`.
-4. **Verification**:
-   - Verify that default page view is completely clean of technical selectors and dev buttons.
-   - Toggle `sudo tom` switch (and type `sudo tom`) to verify smooth reveal of developer inspector, gem selectors, and grounding data.
-   - Run `compile_applet` and `lint_applet` to confirm zero errors.
+---
+
+## 4. Deep Male Voice Persona Configuration (`useSpeech.ts` & `TomBotCard.tsx`)
+
+- **Web Speech Synthesis Default:**
+  - Configured default `pitch` to `0.72` (authentic deep male baritone register) and default `rate` to `0.90` (steady, unhurried curb cadence).
+  - Implemented priority voice selector sorting and selecting natural English male voices (`guy`, `david`, `christopher`, `aaron`, `daniel`, `alex`, `tom`, `male`, `ryan`, `james`, `oliver`, `george`, `fred`, `mark`, etc.).
+  - Added strict exclusion list for female voice signatures (`zira`, `jenny`, `aria`, `samantha`, `victoria`, `karen`, `susan`, etc.) ensuring default selection never falls back to a female synthesizer.
+- **Customizer Presets & Controls:**
+  - Added voice preset buttons:
+    - **Deep Baritone:** Pitch 0.70, Rate 0.90 (Deep curb mentor)
+    - **Grounded Peer:** Pitch 0.75, Rate 0.92 (Calm & steady brother)
+    - **Warm Street:** Pitch 0.82, Rate 0.98 (Natural curb cadence)
+  - Expanded pitch slider range (`0.50`–`1.20`) allowing sub-baritone register fine-tuning.
+  - Added live indicators highlighting "Masculine Baritone Active" and dynamically categorizing pitch levels.
+
+---
+
+## 5. Verification & Testing
+
+- Built and passed 14/14 voice verification tests (`verifyVoiceSettings.ts`).
+- Built and passed 56/56 Gemini Skills & Maestro v1.3 tests (`verifyGeminiSkillsMaestro.ts`).
+- Verified zero regressions across security, SMS removal, server handoff, and adapter test suites (183/183 total tests passing).
+- Confirmed full TypeScript compilation (`compile_applet`) and zero linter warnings (`lint_applet`).
+- Phone number ending in `6251` strictly quarantined across all output, speech, and message formats.

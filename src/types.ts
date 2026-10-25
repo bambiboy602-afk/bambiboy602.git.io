@@ -30,6 +30,7 @@ export interface CreatorProfile {
     website: string;
     chatLink: string;
   };
+  coreTomPrompt?: string;
 }
 
 export interface ProductItem {

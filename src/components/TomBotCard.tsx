@@ -343,7 +343,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
   const quickQuestions = isSudoActive
     ? [
         'I slipped up and relapsed.',
-        'Google Gems Architecture',
+        'Gemini Skills Architecture',
         'Sudo Tom',
         'Emergency shelter in Phoenix',
         'Inspect System Patches',
@@ -439,10 +439,10 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
               <button
                 onClick={() => setShowGemsModal(true)}
                 className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-emerald-700 hover:from-amber-400 hover:to-emerald-600 text-white text-[10px] font-bold shadow-xs transition-all hover:scale-105"
-                title="Google Gemini Gems & Prompts"
+                title="Gemini Skills Architecture & Prompts"
               >
                 <Sparkles className="w-3 h-3 text-amber-200" />
-                <span>Google Gems</span>
+                <span>Gemini Skills</span>
               </button>
 
               <a
@@ -662,7 +662,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                     className="px-2 py-1 rounded-lg bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-200 transition-colors flex items-center gap-1"
                   >
                     <Sparkles className="w-3 h-3 text-amber-400" />
-                    <span>Gem Prompts</span>
+                    <span>Skills Hub</span>
                   </button>
                 </div>
               </div>
@@ -671,15 +671,26 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Google Gems Mode Selector Row - Visible only when Sudo is Active */}
+      {/* Gemini Skills Mode Selector Row - Visible only when Sudo is Active */}
       {isSudoActive && (
         <div className="px-3 py-1.5 bg-stone-50 dark:bg-stone-950/60 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-1.5 text-[10px]">
           <div className="flex items-center gap-1 overflow-x-auto py-0.5">
             <span className="font-bold text-stone-500 dark:text-stone-400 flex items-center gap-1 shrink-0">
               <Sparkles className="w-2.5 h-2.5 text-amber-500" />
-              <span>Gem:</span>
+              <span>Skill:</span>
             </span>
             <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={() => setActiveGemMode('maestro')}
+                className={`px-1.5 py-0.5 rounded font-bold transition-all ${
+                  activeGemMode === 'maestro'
+                    ? 'bg-indigo-700 text-white shadow-xs'
+                    : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
+                }`}
+                title="Skill 0/99: Maestro (Universal Orchestrator v1.3)"
+              >
+                #0 Maestro v1.3
+              </button>
               <button
                 onClick={() => setActiveGemMode('tom-core')}
                 className={`px-1.5 py-0.5 rounded font-bold transition-all ${
@@ -687,7 +698,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                     ? 'bg-emerald-700 text-white shadow-xs'
                     : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
                 }`}
-                title="Gem 1: Tom Core (The Unbending Curb Mentor)"
+                title="Skill 1: Tom Core (Authentic Street Realism)"
               >
                 #1 Tom Core
               </button>
@@ -698,7 +709,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                     ? 'bg-amber-600 text-white shadow-xs'
                     : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
                 }`}
-                title="Gem 2: B.A.M.B.I. (Process & Diagnostic Engine)"
+                title="Skill 2: B.A.M.B.I. (Process & Behavioral Engine)"
               >
                 #2 B.A.M.B.I.
               </button>
@@ -709,7 +720,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                     ? 'bg-purple-700 text-white shadow-xs'
                     : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
                 }`}
-                title="Gem 3: The Grower (Adaptive Insight & Delivery Engine)"
+                title="Skill 3: The Grower (Quality Controls & Defamation Guard)"
               >
                 #3 The Grower
               </button>
@@ -720,9 +731,9 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                     ? 'bg-blue-700 text-white shadow-xs'
                     : 'bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-300'
                 }`}
-                title="Gem 4: Tom & B.A.M.B.I. Master Knowledge Vault (NotebookLM Update Engine for Gems 1, 2, and 3)"
+                title="Skill 5: Master Knowledge Vault (Verified Phoenix Resources & NotebookLM Grounding)"
               >
-                #4 Master Vault (NotebookLM)
+                #5 Master Vault
               </button>
             </div>
           </div>
@@ -919,32 +930,33 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
 
               {/* Voice Personas (How Tom Sounds) */}
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5">
-                  Voice Tone & Persona
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5 flex items-center justify-between">
+                  <span>Voice Tone & Persona (Deep Male)</span>
+                  <span className="text-[9px] font-normal text-emerald-600 dark:text-emerald-400">Masculine Baritone Active</span>
                 </label>
                 <div className="grid grid-cols-3 gap-1.5 mb-2">
                   <button
-                    onClick={() => applyVoicePreset(0.80, 0.90, 'Deep Curb Mentor')}
-                    className="p-1.5 rounded-lg border border-stone-200 dark:border-stone-800 hover:border-emerald-500 bg-white dark:bg-stone-900 text-left transition-all"
+                    onClick={() => applyVoicePreset(0.70, 0.90, 'Deep Male Baritone')}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-stone-800 hover:border-emerald-500 bg-white dark:bg-stone-900 text-left transition-all group"
                   >
-                    <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">Deep & Grounded</div>
-                    <div className="text-[9px] text-stone-500 dark:text-stone-400">Curb mentor tone</div>
+                    <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 group-hover:text-emerald-600">Deep Baritone</div>
+                    <div className="text-[9px] text-stone-500 dark:text-stone-400">Deep curb mentor</div>
                   </button>
 
                   <button
-                    onClick={() => applyVoicePreset(0.92, 0.98, 'Warm Peer Brother')}
-                    className="p-1.5 rounded-lg border border-stone-200 dark:border-stone-800 hover:border-emerald-500 bg-white dark:bg-stone-900 text-left transition-all"
+                    onClick={() => applyVoicePreset(0.75, 0.92, 'Deep Grounded Peer')}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-stone-800 hover:border-emerald-500 bg-white dark:bg-stone-900 text-left transition-all group"
                   >
-                    <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">Warm Brother</div>
-                    <div className="text-[9px] text-stone-500 dark:text-stone-400">Supportive & calm</div>
+                    <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 group-hover:text-emerald-600">Grounded Peer</div>
+                    <div className="text-[9px] text-stone-500 dark:text-stone-400">Calm & steady brother</div>
                   </button>
 
                   <button
-                    onClick={() => applyVoicePreset(1.02, 1.05, 'Street Motivation')}
-                    className="p-1.5 rounded-lg border border-stone-200 dark:border-stone-800 hover:border-emerald-500 bg-white dark:bg-stone-900 text-left transition-all"
+                    onClick={() => applyVoicePreset(0.82, 0.98, 'Warm Street Brother')}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-stone-800 hover:border-emerald-500 bg-white dark:bg-stone-900 text-left transition-all group"
                   >
-                    <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">Motivation</div>
-                    <div className="text-[9px] text-stone-500 dark:text-stone-400">Clear & energetic</div>
+                    <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 group-hover:text-emerald-600">Warm Street</div>
+                    <div className="text-[9px] text-stone-500 dark:text-stone-400">Natural curb cadence</div>
                   </button>
                 </div>
 
@@ -953,12 +965,12 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                   <div>
                     <div className="flex justify-between text-[10px] text-stone-600 dark:text-stone-300 font-medium mb-1">
                       <span>Pitch: {pitch.toFixed(2)}x</span>
-                      <span className="text-[9px] text-stone-400">{pitch < 0.9 ? 'Deeper' : pitch > 1.1 ? 'Higher' : 'Normal'}</span>
+                      <span className="text-[9px] text-stone-400">{pitch <= 0.75 ? 'Deep Baritone' : pitch <= 0.88 ? 'Grounded Male' : 'Higher'}</span>
                     </div>
                     <input
                       type="range"
-                      min="0.6"
-                      max="1.4"
+                      min="0.5"
+                      max="1.2"
                       step="0.05"
                       value={pitch}
                       onChange={(e) => setPitch(parseFloat(e.target.value))}
@@ -969,7 +981,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
                   <div>
                     <div className="flex justify-between text-[10px] text-stone-600 dark:text-stone-300 font-medium mb-1">
                       <span>Speed: {rate.toFixed(2)}x</span>
-                      <span className="text-[9px] text-stone-400">{rate < 0.9 ? 'Unhurried' : rate > 1.1 ? 'Fast' : 'Conversational'}</span>
+                      <span className="text-[9px] text-stone-400">{rate < 0.92 ? 'Unhurried Curb' : rate > 1.05 ? 'Fast' : 'Conversational'}</span>
                     </div>
                     <input
                       type="range"
@@ -1251,7 +1263,7 @@ export const TomBotCard: React.FC<TomBotCardProps> = ({
         </button>
       </div>
 
-      {/* Google Gems Full System Modal */}
+      {/* Gemini Skills & Maestro v1.3 Universal Modal */}
       <GoogleGemsModal
         isOpen={showGemsModal}
         onClose={() => setShowGemsModal(false)}

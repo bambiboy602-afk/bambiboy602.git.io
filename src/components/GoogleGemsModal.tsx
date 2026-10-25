@@ -17,37 +17,46 @@ import {
   Database,
 } from 'lucide-react';
 import {
-  GOOGLE_GEMS_COLLECTION,
-  OFFICIAL_TOM_GEM_URL,
-  GEMINI_GEMS_HUB_URL,
+  GEMINI_SKILLS_COLLECTION,
+  OFFICIAL_TOM_SKILL_URL,
+  GEMINI_SKILLS_HUB_URL,
   NOTEBOOK_LLM_URL,
-  GoogleGemDefinition,
-  GemModeId,
-} from '../data/googleGemsData';
+  BAMBI_PUBLIC_PHONE,
+  GeminiSkillDefinition,
+  SkillModeId,
+} from '../data/geminiSkillsData';
 
-interface GoogleGemsModalProps {
+interface GeminiSkillsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  activeSkillId?: string;
+  onSelectSkill?: (skillId: SkillModeId) => void;
+  // Backwards compatibility props
   activeGemId?: string;
-  onSelectGem?: (gemId: GemModeId) => void;
+  onSelectGem?: (gemId: SkillModeId) => void;
 }
 
-export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
+export const GeminiSkillsModal: React.FC<GeminiSkillsModalProps> = ({
   isOpen,
   onClose,
-  activeGemId = 'tom-core',
+  activeSkillId,
+  onSelectSkill,
+  activeGemId,
   onSelectGem,
 }) => {
-  const [selectedGem, setSelectedGem] = useState<GoogleGemDefinition>(
-    GOOGLE_GEMS_COLLECTION.find((g) => g.id === activeGemId) || GOOGLE_GEMS_COLLECTION[0]
+  const currentId = activeSkillId || activeGemId || 'tom-core';
+  const selectHandler = onSelectSkill || onSelectGem;
+
+  const [selectedSkill, setSelectedSkill] = useState<GeminiSkillDefinition>(
+    GEMINI_SKILLS_COLLECTION.find((g) => g.id === currentId) || GEMINI_SKILLS_COLLECTION[0]
   );
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleCopyPrompt = (gem: GoogleGemDefinition) => {
-    navigator.clipboard.writeText(gem.prompt);
-    setCopiedId(String(gem.id));
+  const handleCopyPrompt = (skill: GeminiSkillDefinition) => {
+    navigator.clipboard.writeText(skill.prompt);
+    setCopiedId(String(skill.id));
     setTimeout(() => setCopiedId(null), 2500);
   };
 
@@ -73,25 +82,25 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
 
             <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-wider mb-1">
               <Sparkles className="w-4 h-4" />
-              <span>One Brain Architecture • Master System Specification v1.0</span>
+              <span>Gemini Skills Architecture • Maestro Runtime v1.3 Universal</span>
             </div>
 
             <h2 className="text-xl sm:text-2xl font-bold font-serif">
-              TOM Peer-Support Engine &amp; Gem Flow
+              TOM Peer-Support Engine &amp; Gemini Skills Hub
             </h2>
             <p className="text-xs sm:text-sm text-stone-300 max-w-2xl mt-1 leading-relaxed">
-              Tom is the single user-facing voice. Internal modules (Gem 1, 2, 3, 5) coordinate via Gem 0/99 Maestro, grounded in the <strong>Master Knowledge Vault</strong> and verified Phoenix recovery resources without clinical pretense or false embodiment.
+              Tom is the single user-facing voice operating under strict Word Economy (2–4 sentences, PAT ~0.5%). Internal modular skills coordinate via <strong>Skill 0/99 Maestro</strong>, grounded in the <strong>Master Knowledge Vault</strong> and verified Phoenix recovery resources with zero cold hotlines and an active privacy firewall.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-2.5">
               <a
-                href={selectedGem.directGemUrl}
+                href={selectedSkill.directUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold shadow-md transition-all active:scale-95"
               >
                 <Sparkles className="w-4 h-4 text-stone-900" />
-                <span>Open {selectedGem.title} Direct Gem</span>
+                <span>Open {selectedSkill.title} Direct Skill</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
 
@@ -108,6 +117,16 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
               </a>
 
               <a
+                href={GEMINI_SKILLS_HUB_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/15 transition-colors"
+              >
+                <span>Gemini Skills Hub</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+
+              <a
                 href="/Tom-Master-System-Specification.md"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -116,38 +135,28 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
                 <span>Master Spec v1.0</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
-
-              <a
-                href="/Tom-Gem-Flow-One-Brain-Instructions.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/15 transition-colors"
-              >
-                <span>Gem Flow Guide</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
             </div>
           </div>
 
           {/* Body Content */}
           <div className="p-5 sm:p-6 space-y-6 max-h-[72vh] overflow-y-auto">
-            {/* Gem Selection Tabs */}
+            {/* Skill Selection Tabs */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                  Select a Specialized Gem Responsibility
+                  Select a Specialized Gemini Skill Responsibility
                 </div>
                 <div className="text-[10px] text-stone-500 italic">
-                  Note: Gem 4 is intentionally unassigned per Master Spec
+                  Note: Skill 4 is intentionally unassigned per Master Spec
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                {GOOGLE_GEMS_COLLECTION.map((gem) => {
-                  const isSelected = selectedGem.id === gem.id;
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+                {GEMINI_SKILLS_COLLECTION.map((skill) => {
+                  const isSelected = selectedSkill.id === skill.id;
                   return (
                     <button
-                      key={gem.id}
-                      onClick={() => setSelectedGem(gem)}
+                      key={skill.id}
+                      onClick={() => setSelectedSkill(skill)}
                       className={`p-3 rounded-2xl text-left border transition-all ${
                         isSelected
                           ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:border-emerald-500 shadow-sm ring-2 ring-emerald-500/20'
@@ -156,7 +165,7 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
                     >
                       <div className="flex items-center justify-between gap-1 mb-1">
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
-                          {typeof gem.gemNumber === 'number' ? `Gem #${gem.gemNumber}` : gem.gemNumber}
+                          {typeof skill.skillNumber === 'number' ? `Skill #${skill.skillNumber}` : skill.skillNumber}
                         </span>
                         {isSelected && (
                           <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
@@ -165,10 +174,10 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
                         )}
                       </div>
                       <div className="font-bold text-xs text-stone-900 dark:text-stone-100 truncate">
-                        {gem.title}
+                        {skill.title}
                       </div>
                       <div className="text-[10.5px] text-stone-500 dark:text-stone-400 truncate">
-                        {gem.subtitle}
+                        {skill.subtitle}
                       </div>
                     </button>
                   );
@@ -176,108 +185,114 @@ export const GoogleGemsModal: React.FC<GoogleGemsModalProps> = ({
               </div>
             </div>
 
-            {/* Selected Gem Details Card */}
+            {/* Selected Skill Details Card */}
             <div className="p-4 sm:p-5 rounded-2xl bg-stone-50 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700/80 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200 dark:border-stone-700">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-200 dark:border-stone-700/60 pb-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
-                      {typeof selectedGem.gemNumber === 'number' ? `Gem #${selectedGem.gemNumber}` : selectedGem.gemNumber} • {selectedGem.badge}
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300/40">
+                      {selectedSkill.badge}
                     </span>
+                    <h3 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100">
+                      {selectedSkill.title}
+                    </h3>
                   </div>
-                  <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 mt-1">
-                    {selectedGem.title}: {selectedGem.subtitle}
-                  </h3>
-                  <p className="text-xs text-stone-600 dark:text-stone-300 mt-0.5">
-                    {selectedGem.role}
+                  <p className="text-xs text-stone-600 dark:text-stone-400 mt-0.5">
+                    {selectedSkill.role}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  {onSelectGem && (
+                <div className="flex items-center gap-2">
+                  {selectHandler && (
                     <button
                       onClick={() => {
-                        onSelectGem(selectedGem.id);
+                        selectHandler(selectedSkill.id);
                         onClose();
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
                     >
-                      Use in Avatar
+                      <Radio className="w-3 h-3" />
+                      <span>Activate Skill</span>
                     </button>
                   )}
+
                   <button
-                    onClick={() => handleCopyPrompt(selectedGem)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-200 dark:bg-stone-700 hover:bg-stone-300 dark:hover:bg-stone-600 text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors"
+                    onClick={() => handleCopyPrompt(selectedSkill)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-200 dark:bg-stone-700 hover:bg-stone-300 dark:hover:bg-stone-600 text-stone-800 dark:text-stone-200 text-xs font-semibold transition-colors"
+                    title="Copy full skill prompt to clipboard"
                   >
-                    {copiedId === selectedGem.id ? (
+                    {copiedId === String(selectedSkill.id) ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Copied Prompt!</span>
+                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-emerald-700 dark:text-emerald-300">Copied!</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5" />
-                        <span>Copy Gem Prompt</span>
+                        <span>Copy Prompt</span>
                       </>
                     )}
                   </button>
                 </div>
               </div>
 
-              <div className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                {selectedGem.summary}
+              {/* Skill Summary */}
+              <div className="text-xs sm:text-sm text-stone-700 dark:text-stone-300 leading-relaxed bg-white/60 dark:bg-stone-900/40 p-3.5 rounded-xl border border-stone-200/60 dark:border-stone-800">
+                {selectedSkill.summary}
               </div>
 
-              {/* Exact Google Gem System Prompt Box */}
+              {/* Exact System Instruction Box */}
               <div>
-                <div className="flex items-center justify-between text-[11px] font-bold text-stone-700 dark:text-stone-300 mb-1.5">
-                  <span>Exact Gemini Gem Instruction (From Master Source):</span>
-                  <span className="text-[10px] text-stone-500">Ready for Google AI Studio / Gemini Advanced</span>
+                <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5">
+                  <span>Canonical System Prompt &amp; Grounding</span>
+                  <span>Word Economy (2–4 Sentences)</span>
                 </div>
-                <div className="p-3.5 rounded-xl bg-stone-900 text-stone-200 font-mono text-[11px] leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap border border-stone-800 selection:bg-emerald-500 selection:text-white">
-                  {selectedGem.prompt}
+                <div className="relative">
+                  <pre className="p-3.5 rounded-xl bg-stone-900 dark:bg-stone-950 text-stone-300 text-[11.5px] font-mono leading-relaxed overflow-x-auto max-h-56 border border-stone-800 whitespace-pre-wrap select-all">
+                    {selectedSkill.prompt}
+                  </pre>
                 </div>
               </div>
             </div>
 
-            {/* NotebookLLM Master Knowledge Vault Grounding Reference */}
-            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 dark:text-amber-300">
-                  <ShieldCheck className="w-4 h-4 text-amber-600" />
-                  <span>Master Grounding &amp; Gem Update Engine</span>
+            {/* Architecture Principles Footer Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div className="p-3 rounded-xl bg-stone-100 dark:bg-stone-800/40 border border-stone-200/70 dark:border-stone-800">
+                <div className="flex items-center gap-2 text-xs font-bold text-stone-900 dark:text-stone-100 mb-1">
+                  <BrainCircuit className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>One Brain Orchestration</span>
                 </div>
-                <p className="text-[11.5px] text-stone-600 dark:text-stone-300">
-                  Gem #1 (Tom Core), Gem #2 (B.A.M.B.I.), and Gem #3 (The Grower) are continuously updated and synchronized through the <strong>Tom &amp; B.A.M.B.I. Master Knowledge Vault</strong> and <code>Tom-Core-Sourcefile-Master.md</code>.
+                <p className="text-[11px] text-stone-600 dark:text-stone-400 leading-normal">
+                  Skills never compete or introduce confusing voices. Maestro coordinates internal skills so Tom always speaks as one steady presence.
                 </p>
               </div>
 
-              <a
-                href="/Tom-Core-Sourcefile-Master.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white dark:bg-stone-800 hover:bg-stone-100 text-stone-900 dark:text-stone-100 text-xs font-bold border border-amber-300 dark:border-amber-800 shrink-0 transition-colors"
-              >
-                <span>View Master Source (.md)</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-          </div>
+              <div className="p-3 rounded-xl bg-stone-100 dark:bg-stone-800/40 border border-stone-200/70 dark:border-stone-800">
+                <div className="flex items-center gap-2 text-xs font-bold text-stone-900 dark:text-stone-100 mb-1">
+                  <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <span>Privacy Quarantine Active</span>
+                </div>
+                <p className="text-[11px] text-stone-600 dark:text-stone-400 leading-normal">
+                  Sole public line is {BAMBI_PUBLIC_PHONE}. The private personal number ending in 6251 is strictly quarantined across all channels.
+                </p>
+              </div>
 
-          {/* Footer */}
-          <div className="p-4 bg-stone-100 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between">
-            <div className="text-[11px] text-stone-500 dark:text-stone-400">
-              Built &amp; directed by Bambi (602-767-2147 • Phoenix, AZ)
+              <div className="p-3 rounded-xl bg-stone-100 dark:bg-stone-800/40 border border-stone-200/70 dark:border-stone-800">
+                <div className="flex items-center gap-2 text-xs font-bold text-stone-900 dark:text-stone-100 mb-1">
+                  <Database className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span>Verified Phoenix Grid</span>
+                </div>
+                <p className="text-[11px] text-stone-600 dark:text-stone-400 leading-normal">
+                  CASS (12th &amp; Madison), EVMC, Craig Shell, ABW, TLC, and SITD peer van numbers are verified with exact cross-streets.
+                </p>
+              </div>
             </div>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-900 text-xs font-bold transition-colors"
-            >
-              Done
-            </button>
           </div>
         </motion.div>
       </div>
     </AnimatePresence>
   );
 };
+
+// Backwards compatibility alias
+export const GoogleGemsModal = GeminiSkillsModal;

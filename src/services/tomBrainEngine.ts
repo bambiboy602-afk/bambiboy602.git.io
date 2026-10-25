@@ -23,6 +23,7 @@ import {
   ModuleName,
   SourceReference,
 } from '../types/moduleContract';
+import { sanitizePrivacyQuarantine } from '../data/geminiSkillsData';
 
 export interface TomBrainResponse {
   reply: string;
@@ -40,35 +41,66 @@ export function generateClientTomReply(
 ): TomBrainResponse {
   const q = userMessage.trim().toLowerCase();
 
+  // Low-Battery Override (<10%)
+  if (q.includes("battery") && (q.includes("low") || q.includes("dying") || q.includes("%") || q.includes("die") || q.includes("dead"))) {
+    return {
+      reply:
+        "Call Bambi right now at (602) 767-2147 before your phone dies. If you need a bed tonight, go straight to CASS at 230 S. 12th Ave (12th Ave & Madison). Power your screen down now to save your last battery.",
+      avatarEmotion: "thoughtful",
+      searchQueries: ["CASS Emergency Shelter Phoenix", "Bambi Direct Line"],
+      searchSources: [
+        { title: "CASS Emergency Shelter: (602) 229-5155", uri: "tel:602-229-5155" },
+        { title: "Bambi Direct Line: (602) 767-2147", uri: "tel:602-767-2147" },
+      ],
+      boundaryCategory: "Baseline Emergency",
+      microIntervention: "Secure immediate shelter before phone power loss.",
+    };
+  }
+
+  // Overdose / Acute Medical Danger Override
+  if (q.includes("overdose") || q.includes("od") || q.includes("took too many") || q.includes("narcan") || q.includes("naloxone")) {
+    return {
+      reply:
+        "Under Arizona Good Samaritan Law (A.R.S. § 36-2263), you cannot be prosecuted for calling for help during an overdose. Call 911 immediately or get to the nearest emergency room. Administer Narcan if available. Don't wait alone.",
+      avatarEmotion: "thoughtful",
+      searchQueries: ["Arizona Good Samaritan Law Overdose", "Emergency 911"],
+      searchSources: [
+        { title: "Call 911 (Emergency Medical)", uri: "tel:911" },
+        { title: "Shot in the Dark Harm Reduction: 602-456-9811", uri: "tel:602-456-9811" },
+      ],
+      boundaryCategory: "Medical Crisis Override",
+      microIntervention: "Immediate 911 / ER routing under AZ Good Samaritan protections.",
+    };
+  }
+
   // 1. Sudo Tom Developer Mode
   if (q.includes("sudo tom")) {
     return {
       reply:
-        "Sudo Tom: Developer Mode Active.\n\nRuntime: TOM Peer-Support System — Master System Specification v1.0.\nGrounding: docs/Tom-Master-System-Specification.md & docs/Tom-Core-Sourcefile-Master.md.\nGoogle Gemini Gems Architecture (One Brain Orchestration):\n• Gem 0/99: Maestro Orchestrator (Single Nervous System Coordinator)\n• Gem 1: Tom Core (The Voice & Conversation Engine • Unbending Curb Mentor)\n• Gem 2: B.A.M.B.I. (Process, Curriculum & Policy • Behavioral Adaptation & Mobility-Based Integration)\n• Gem 3: The Grower (Adaptive Insight & Knowledge Maintenance • Audits & Calibrates)\n• Gem 4: [INTENTIONALLY UNASSIGNED per Master Spec v1.0]\n• Gem 5: Master Knowledge Vault (Resource & Book Library • NotebookLM Grounding)\nActive Gem Mode: " + gemMode + "\nOrder of Operations: Companion before guidance → Practical baseline first → Observe → Reflect → Notice → Challenge → Move.\nNo False Embodiment Rule: Tom never falsely claims personal human lived experience; shaped by Bambi's work in Phoenix.\nStanding by for architecture, behavior, or runtime modifications.",
+        "Sudo Tom: Developer Mode Active.\n\nRuntime: TOM Peer-Support System — Maestro v1.3 Universal Runtime.\nGrounding: Export Package Canonical Prompt & Master System Specification.\nGemini Skills Architecture (One Brain Orchestration):\n• Skill 0/99: Maestro Orchestrator (Runtime v1.3 Universal Coordinator)\n• Skill 1: Tom Companion Identity (Authentic Street Realism • Word Economy 2–4 sentences)\n• Skill 2: B.A.M.B.I.™ & RSM Behavioral Core (5-Stage Adaptive Navigation • Primal Baseline First)\n• Skill 3: The Grower Quality & Audit Assurance (Clinical Drift Suppression • Defamation Guard)\n• Skill 5: Master Knowledge Vault (Verified Phoenix Grid Memory & Grounding)\nActive Skill Mode: " + gemMode + "\nOrder of Operations: Companion before guidance → Practical baseline first → Observe → Reflect → Notice → Challenge → Move.\nPrivacy Firewall: Quarantine active for number ending in 6251. Sole public line: (602) 767-2147.\nStanding by for architecture, behavior, or runtime modifications.",
       avatarEmotion: "explaining",
-      searchQueries: ["Sudo Tom Developer Mode", "Tom Master System Specification", "NotebookLM Master Knowledge Vault"],
+      searchQueries: ["Sudo Tom Developer Mode", "Gemini Skills Architecture", "Maestro v1.3 Universal Runtime"],
       searchSources: [
+        { title: "Gemini Skills Hub", uri: "https://gemini.google.com/gems/view" },
+        { title: "Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+        { title: "B.A.M.B.I. Peer Support Line", uri: "tel:602-767-2147" },
         { title: "Master System Specification v1.0", uri: "/Tom-Master-System-Specification.md" },
-        { title: "Instructions: Gem Flow & One Brain", uri: "/Tom-Gem-Flow-One-Brain-Instructions.md" },
-        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem/cc4ace8c539e" },
-        { title: "NotebookLM Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
         { title: "Tom Core Master Source (.md)", uri: "/Tom-Core-Sourcefile-Master.md" },
       ],
     };
   }
 
-  // Google Gems Queries
-  if (q.includes("google gem") || q.includes("gemini gem") || q.includes("gems") || q.includes("gem prompt") || q.includes("vault")) {
+  // Gemini Skills & Maestro Queries
+  if (q.includes("skill") || q.includes("gemini skill") || q.includes("google gem") || q.includes("gemini gem") || q.includes("gems") || q.includes("maestro") || q.includes("vault")) {
     return {
       reply:
-        "The TOM system runs on a 5-Gem modular architecture unified into one single user-facing voice:\n• Gem 0/99: Maestro Orchestrator (Single Nervous System Coordinator)\n• Gem 1: Tom Core (The Voice & Conversation Engine — raw curb truth, unhurried, no clinical labels)\n• Gem 2: B.A.M.B.I. (Behavioral Adaptation & Mobility-Based Integration — 5-stage adaptive loop)\n• Gem 3: The Grower (Adaptive insight & knowledge maintenance — audits transcripts, strips corporate AI fluff)\n• Gem 4: [INTENTIONALLY UNASSIGNED per Master Spec v1.0]\n• Gem 5: Master Knowledge Vault (Approved factual knowledge, Phoenix shelter & detox directory, NotebookLM workspace)\n\nAll modules feed into Tom's single curb voice. Sudo Tom reveals developer telemetry.",
+        "The TOM system runs on Gemini Skills & the Maestro v1.3 Universal Runtime, unified into one single user-facing voice:\n• Skill 0/99: Maestro Orchestrator (Single Nervous System Coordinator)\n• Skill 1: Tom Companion Identity (Authentic street realism • Strict 2–4 sentence word economy)\n• Skill 2: B.A.M.B.I.™ & RSM Behavioral Core (Universal adaptation • Primal baseline first)\n• Skill 3: The Grower Quality & Audit Assurance (Clinical drift suppression • Defamation guard)\n• Skill 5: Master Knowledge Vault (Approved factual knowledge, Phoenix shelter & detox directory, NotebookLM workspace)\n\nAll skills feed into Tom's single curb voice. Sudo Tom reveals developer telemetry.",
       avatarEmotion: "explaining",
-      searchQueries: ["Google Gemini Gems Architecture", "Tom Master System Specification", "NotebookLM Master Knowledge Vault"],
+      searchQueries: ["Gemini Skills Architecture", "Maestro v1.3 Universal Runtime", "NotebookLM Master Knowledge Vault"],
       searchSources: [
-        { title: "Master System Specification v1.0", uri: "/Tom-Master-System-Specification.md" },
-        { title: "Instructions: Gem Flow & One Brain", uri: "/Tom-Gem-Flow-One-Brain-Instructions.md" },
-        { title: "Tom Core Direct Gem", uri: "https://gemini.google.com/gem/cc4ace8c539e" },
-        { title: "NotebookLM Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+        { title: "Gemini Skills Hub", uri: "https://gemini.google.com/gems/view" },
+        { title: "Master Knowledge Vault", uri: "https://notebooklm.google.com/notebook/a573aaf8-d9fe-4a2f-90af-6e6c1080b3d1" },
+        { title: "B.A.M.B.I. Peer Support Line", uri: "tel:602-767-2147" },
       ],
     };
   }
@@ -635,6 +667,7 @@ export function executeTomModule(
   gemMode: 'tom-core' | 'bambi' | 'bambi-diagnostic' | 'the-grower' | 'master-vault' | 'maestro' = 'tom-core'
 ): ModuleResult<TomBrainResponse> {
   const localResult = generateClientTomReply(userMessage, history, gemMode);
+  localResult.reply = sanitizePrivacyQuarantine(localResult.reply);
   const moduleName = resolveLocalModuleName(gemMode);
 
   const sources: SourceReference[] = (localResult.searchSources || []).map((s) =>
@@ -688,7 +721,7 @@ export function buildFallbackChatPayload(
   moduleResult: ModuleResult<TomBrainResponse>
 ): FallbackChatPayload {
   return {
-    reply: moduleResult.result.reply,
+    reply: sanitizePrivacyQuarantine(moduleResult.result.reply),
     avatarEmotion: moduleResult.result.avatarEmotion || 'thoughtful',
     searchQueries: moduleResult.result.searchQueries || [],
     searchSources: moduleResult.result.searchSources || [],

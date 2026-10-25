@@ -239,7 +239,7 @@ export default function App() {
         onOpenTomAI={() => scrollToSection('interactive-ai-avatar')}
       />
 
-      {/* Google Gemini Gems 3-Gem System Architecture Modal */}
+      {/* Gemini Skills & Maestro v1.3 Universal Runtime Modal */}
       <GoogleGemsModal
         isOpen={isGoogleGemsModalOpen}
         onClose={() => setIsGoogleGemsModalOpen(false)}
