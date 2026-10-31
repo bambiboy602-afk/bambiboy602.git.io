@@ -35,6 +35,7 @@ import {
   LegalResourceItem,
 } from '../data/communityResourcesData';
 import { NOTEBOOK_LLM_URL } from '../data/googleGemsData';
+import { COMMUNITY_RESOURCE_CATEGORIES } from '../data/communityResourceLinks';
 
 export type PillarTab = 'housing' | 'work' | 'treatment' | 'legal';
 
@@ -390,10 +391,9 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
           <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 text-amber-950 dark:text-amber-200 text-xs flex items-start gap-2.5">
             <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="font-bold">How Document Uploads Work:</p>
+              <p className="font-bold">Resource Links &amp; Template Placeholders:</p>
               <p className="text-[11px] leading-relaxed">
-                All resource data from your uploaded PDFs is already fully digitized into this searchable directory so anyone on mobile or desktop can immediately search and call.
-                To link the actual PDF files directly for 1-click download, place <strong>recoveryhomes.pdf</strong>, <strong>Comprehensive Recovery Directory V2.pdf</strong>, and <strong>Registered-Apprenticeship-Program-List.pdf</strong> into the <code>public/</code> folder using the AI Studio file explorer!
+                All resource data from your Arizona recovery guides is digitized into this searchable directory. Each category features exactly 4 links, including template placeholders in <code>src/data/communityResourceLinks.ts</code> that you can easily fill in with your custom links or PDFs.
               </p>
             </div>
             <button
@@ -455,75 +455,60 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
           {/* TAB 1: HOUSING */}
           {activeTab === 'housing' && (
             <div className="space-y-6">
-              {/* PDF Documents Download Banner */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Doc 1: recoveryhomes.pdf */}
-                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex flex-col justify-between gap-3 shadow-xs">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-700 text-white flex items-center justify-center shrink-0">
-                      <FileText className="w-5 h-5" />
-                    </div>
+              {/* 4 Housing Resource Links & Fill-In Templates */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {COMMUNITY_RESOURCE_CATEGORIES.housing.links.map((link, idx) => (
+                  <div
+                    key={link.id}
+                    className={`p-3.5 rounded-2xl flex flex-col justify-between gap-3 shadow-xs transition-all ${
+                      link.isTemplate
+                        ? 'border-2 border-dashed border-emerald-300 dark:border-emerald-700/80 bg-emerald-50/40 dark:bg-emerald-950/20 hover:border-emerald-500'
+                        : 'border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-stone-800/90 hover:border-emerald-500'
+                    }`}
+                  >
                     <div>
-                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                        Official Document 1
-                      </span>
-                      <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                        recoveryhomes.pdf
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                          link.isTemplate
+                            ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700'
+                            : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                        }`}>
+                          {link.isTemplate ? `Template Slot ${idx === 0 ? '1 (Replaces recoveryhomes.pdf)' : idx + 1}` : 'Official PDF Document'}
+                        </span>
+                        {link.isTemplate ? (
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        ) : (
+                          <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                        )}
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
+                        {link.title}
                       </h4>
-                      <p className="text-xs text-stone-600 dark:text-stone-300 mt-0.5">
-                        Halfway House programs, low-barrier homes, emergency shelters & crisis respites.
+                      <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1 leading-snug">
+                        {link.description}
                       </p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 pt-1">
-                    <a
-                      href="/recoveryhomes.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Open / Download PDF</span>
-                    </a>
-                    <span className="text-[11px] text-stone-500 dark:text-stone-400 font-mono">
-                      16 Pages
-                    </span>
-                  </div>
-                </div>
 
-                {/* Doc 2: Comprehensive Recovery Directory V2.pdf */}
-                <div className="p-4 rounded-2xl bg-stone-100 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 flex flex-col justify-between gap-3 shadow-xs">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-stone-900 dark:bg-stone-700 text-white flex items-center justify-center shrink-0">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                        Official Document 2
-                      </span>
-                      <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                        Comprehensive Recovery Directory V2.pdf
-                      </h4>
-                      <p className="text-xs text-stone-600 dark:text-stone-300 mt-0.5">
-                        Consolidated Arizona recovery facilities, halfway houses & behavioral services.
-                      </p>
+                    <div className="pt-2 border-t border-stone-100 dark:border-stone-700/60">
+                      {link.isTemplate ? (
+                        <div className="flex items-center justify-between gap-1 text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                          <span className="truncate">Fill in communityResourceLinks.ts</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0">Template</span>
+                        </div>
+                      ) : (
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Open / Download PDF</span>
+                        </a>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 pt-1">
-                    <a
-                      href="/Comprehensive_Recovery_Directory_V2.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white text-xs font-bold transition-all shadow-xs"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Open / Download PDF</span>
-                    </a>
-                    <span className="text-[11px] text-stone-500 dark:text-stone-400 font-mono">
-                      Consolidated Edition
-                    </span>
-                  </div>
-                </div>
+                ))}
               </div>
 
               {/* Search & Filter Bar */}
@@ -626,34 +611,60 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
           {/* TAB 2: WORK RESOURCES (APPRENTICESHIPS) */}
           {activeTab === 'work' && (
             <div className="space-y-6">
-              {/* Document Download Banner */}
-              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <Briefcase className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                      Arizona Department of Economic Security
-                    </span>
-                    <h4 className="text-base font-bold text-stone-900 dark:text-stone-100">
-                      Registered-Apprenticeship-Program-List.pdf
-                    </h4>
-                    <p className="text-xs text-stone-600 dark:text-stone-300 mt-0.5">
-                      44-page official directory of Arizona paid registered apprenticeships: Carpenters, Electricians, Plumbers, Mechanics, HVAC & more.
-                    </p>
-                  </div>
-                </div>
+              {/* 4 Work Resource Links & Fill-In Templates */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {COMMUNITY_RESOURCE_CATEGORIES.work.links.map((link, idx) => (
+                  <div
+                    key={link.id}
+                    className={`p-3.5 rounded-2xl flex flex-col justify-between gap-3 shadow-xs transition-all ${
+                      link.isTemplate
+                        ? 'border-2 border-dashed border-amber-300 dark:border-amber-700/80 bg-amber-50/40 dark:bg-amber-950/20 hover:border-amber-500'
+                        : 'border border-amber-200 dark:border-amber-800 bg-white dark:bg-stone-800/90 hover:border-amber-500'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                          link.isTemplate
+                            ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700'
+                            : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                        }`}>
+                          {link.isTemplate ? `Template Slot ${idx}` : 'Official PDF Document'}
+                        </span>
+                        {link.isTemplate ? (
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        ) : (
+                          <FileText className="w-3.5 h-3.5 text-amber-600" />
+                        )}
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
+                        {link.title}
+                      </h4>
+                      <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1 leading-snug">
+                        {link.description}
+                      </p>
+                    </div>
 
-                <a
-                  href="/Registered-Apprenticeship-Program-List.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shrink-0 shadow-md active:scale-95"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download Full 44-Page PDF</span>
-                </a>
+                    <div className="pt-2 border-t border-stone-100 dark:border-stone-700/60">
+                      {link.isTemplate ? (
+                        <div className="flex items-center justify-between gap-1 text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                          <span className="truncate">Fill in communityResourceLinks.ts</span>
+                          <span className="text-amber-600 dark:text-amber-400 font-bold shrink-0">Template</span>
+                        </div>
+                      ) : (
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-xs"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Open / Download PDF</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Search & Filter */}
@@ -793,8 +804,8 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
                   </p>
                 </div>
 
-                {/* 3 Treatment Links: Granite Mountain Behavioral, 6027672147 Bambi, Axiom Care */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* 4 Treatment Links: Granite Mountain Behavioral, Bambi (602-767-2147), Axiom Care, Treatment Template */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* Link 1: Granite Mountain Behavioral */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-rose-200 dark:border-rose-900/60 shadow-xs flex flex-col justify-between space-y-3">
                     <div>
@@ -840,7 +851,8 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
                         <Phone className="w-3.5 h-3.5 text-rose-600" />
                       </div>
                       <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
-                        6027672147 Bambi
+                        Bambi (602-767-2147)
+                        <span className="sr-only">6027672147 Bambi</span>
                       </h4>
                       <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed mt-1">
                         Speak directly with a peer who knows every intake door and detox bed in the Valley.
@@ -894,6 +906,30 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
                         <Phone className="w-3 h-3 text-rose-600" />
                         <span>Call (844) 929-4662</span>
                       </a>
+                    </div>
+                  </div>
+
+                  {/* Link 4: Treatment Template */}
+                  <div className="p-4 rounded-2xl border-2 border-dashed border-rose-300 dark:border-rose-700/80 bg-rose-50/40 dark:bg-rose-950/20 shadow-xs flex flex-col justify-between space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                          Template Slot
+                        </span>
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
+                        [Treatment Template / Fill In Here]
+                      </h4>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed mt-1">
+                        Replace with outpatient clinic, MAT provider, counseling center, or recovery community link.
+                      </p>
+                    </div>
+                    <div className="pt-2 flex flex-col gap-1.5 border-t border-stone-100 dark:border-stone-700/60">
+                      <div className="flex items-center justify-between gap-1 text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                        <span className="truncate">Fill in communityResourceLinks.ts</span>
+                        <span className="text-rose-600 dark:text-rose-400 font-bold shrink-0">Template</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1044,30 +1080,36 @@ export const CommunityResourcesModal: React.FC<CommunityResourcesModalProps> = (
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1">
-                    <span className="text-[10px] font-bold text-blue-600 uppercase">Step 1</span>
-                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">Warrants &amp; Court Dates</h4>
-                    <p className="text-[11px] text-stone-500 leading-relaxed">
-                      Walk-in warrant resolution clinics in Phoenix &amp; Maricopa without jail custody.
-                    </p>
-                  </div>
+                {/* 4 Legal Resource Links & Fill-In Templates */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {COMMUNITY_RESOURCE_CATEGORIES.legal.links.map((link, idx) => (
+                    <div
+                      key={link.id}
+                      className="p-3.5 rounded-2xl flex flex-col justify-between gap-3 shadow-xs transition-all border-2 border-dashed border-blue-300 dark:border-blue-700/80 bg-white/80 dark:bg-stone-800/80 hover:border-blue-500"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-700">
+                            Template Slot {idx + 1}
+                          </span>
+                          <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
+                          {link.title}
+                        </h4>
+                        <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1 leading-snug">
+                          {link.description}
+                        </p>
+                      </div>
 
-                  <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1">
-                    <span className="text-[10px] font-bold text-blue-600 uppercase">Step 2</span>
-                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">MVD Fee Waivers &amp; IDs</h4>
-                    <p className="text-[11px] text-stone-500 leading-relaxed">
-                      A.R.S. § 28-3165 homeless fee waiver vouchers for state IDs and birth certificates.
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-xs space-y-1">
-                    <span className="text-[10px] font-bold text-blue-600 uppercase">Step 3</span>
-                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">Fines &amp; Expungement</h4>
-                    <p className="text-[11px] text-stone-500 leading-relaxed">
-                      FARE program fine relief, license reinstatement, and Clean Slate set-asides.
-                    </p>
-                  </div>
+                      <div className="pt-2 border-t border-stone-100 dark:border-stone-700/60">
+                        <div className="flex items-center justify-between gap-1 text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                          <span className="truncate">Fill in communityResourceLinks.ts</span>
+                          <span className="text-blue-600 dark:text-blue-400 font-bold shrink-0">Template</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

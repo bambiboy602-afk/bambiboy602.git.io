@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { TomBotCard } from './TomBotCard';
 import { OFFICIAL_TOM_GEM_URL, NOTEBOOK_LLM_URL } from '../data/googleGemsData';
+import { COMMUNITY_RESOURCE_CATEGORIES } from '../data/communityResourceLinks';
 
 interface ProfileHeaderProps {
   profile: CreatorProfile;
@@ -143,7 +144,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                       </h4>
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                      2 PDF Docs
+                      4 Resource Links
                     </span>
                   </div>
                   <p className="text-[11.5px] text-stone-600 dark:text-stone-300 leading-snug">
@@ -151,28 +152,29 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   </p>
                 </div>
 
-                {/* Direct Document Links */}
+                {/* 4 Direct Resource Links (including editable templates) */}
                 <div className="mt-3 pt-2.5 border-t border-stone-100 dark:border-stone-700/60 flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
-                  <a
-                    href="/recoveryhomes.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-[10.5px] font-bold border border-emerald-200 dark:border-emerald-800 transition-colors shadow-2xs"
-                    title="Open recoveryhomes.pdf"
-                  >
-                    <FileText className="w-3 h-3 text-emerald-600" />
-                    <span>recoveryhomes.pdf</span>
-                  </a>
-                  <a
-                    href="/Comprehensive_Recovery_Directory_V2.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-700/80 hover:bg-stone-200 dark:hover:bg-stone-600 text-stone-800 dark:text-stone-200 text-[10.5px] font-bold border border-stone-200 dark:border-stone-600 transition-colors shadow-2xs"
-                    title="Open Comprehensive_Recovery_Directory_V2.pdf"
-                  >
-                    <FileText className="w-3 h-3 text-stone-600 dark:text-stone-300" />
-                    <span>Recovery Directory V2.pdf</span>
-                  </a>
+                  {COMMUNITY_RESOURCE_CATEGORIES.housing.links.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target={link.url.startsWith('#') || link.url.startsWith('tel:') ? undefined : '_blank'}
+                      rel={link.url.startsWith('#') || link.url.startsWith('tel:') ? undefined : 'noopener noreferrer'}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition-colors shadow-2xs ${
+                        link.isTemplate
+                          ? 'border-dashed border-emerald-400/80 dark:border-emerald-600/80 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900'
+                          : 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
+                      }`}
+                      title={link.description || link.title}
+                    >
+                      {link.isTemplate ? (
+                        <Sparkles className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
+                      ) : (
+                        <FileText className="w-3 h-3 text-emerald-600 shrink-0" />
+                      )}
+                      <span className="truncate max-w-[155px]">{link.title}</span>
+                    </a>
+                  ))}
                 </div>
               </div>
 
@@ -193,7 +195,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                       </h4>
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                      44-Page PDF
+                      4 Resource Links
                     </span>
                   </div>
                   <p className="text-[11.5px] text-stone-600 dark:text-stone-300 leading-snug">
@@ -201,18 +203,29 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   </p>
                 </div>
 
-                {/* Direct Document Link */}
+                {/* 4 Direct Resource Links (including editable templates) */}
                 <div className="mt-3 pt-2.5 border-t border-stone-100 dark:border-stone-700/60 flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
-                  <a
-                    href="/Registered-Apprenticeship-Program-List.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/80 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 text-[10.5px] font-bold border border-amber-200 dark:border-amber-800 transition-colors shadow-2xs"
-                    title="Open Registered-Apprenticeship-Program-List.pdf"
-                  >
-                    <FileText className="w-3 h-3 text-amber-600" />
-                    <span>Apprenticeship-Program-List.pdf</span>
-                  </a>
+                  {COMMUNITY_RESOURCE_CATEGORIES.work.links.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target={link.url.startsWith('#') || link.url.startsWith('tel:') ? undefined : '_blank'}
+                      rel={link.url.startsWith('#') || link.url.startsWith('tel:') ? undefined : 'noopener noreferrer'}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition-colors shadow-2xs ${
+                        link.isTemplate
+                          ? 'border-dashed border-amber-400/80 dark:border-amber-600/80 bg-amber-50/60 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900'
+                          : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/80 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200'
+                      }`}
+                      title={link.description || link.title}
+                    >
+                      {link.isTemplate ? (
+                        <Sparkles className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                      ) : (
+                        <FileText className="w-3 h-3 text-amber-600 shrink-0" />
+                      )}
+                      <span className="truncate max-w-[155px]">{link.title}</span>
+                    </a>
+                  ))}
                 </div>
               </div>
 
@@ -232,44 +245,45 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                         Treatment
                       </h4>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-rose-500 group-hover:translate-x-0.5 transition-all" />
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                      4 Resource Links
+                    </span>
                   </div>
                   <p className="text-[11.5px] text-stone-600 dark:text-stone-300 leading-snug">
                     Medically supervised detox, AHCCCS 25-day beds, and intensive residential recovery.
                   </p>
                 </div>
-                {/* 3 Treatment Links: Granite Mountain Behavioral, 6027672147 Bambi, Axiom Care */}
+
+                {/* 4 Treatment Links: Granite Mountain Behavioral, Bambi (602-767-2147), Axiom Care, Treatment Template */}
                 <div className="mt-3 pt-2.5 border-t border-stone-100 dark:border-stone-700/60 flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
-                  <a
-                    href="https://granitemountainbhc.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/80 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-800 dark:text-rose-200 text-[10.5px] font-bold border border-rose-200 dark:border-rose-800 transition-colors shadow-2xs"
-                    title="Granite Mountain Behavioral Healthcare"
-                  >
-                    <ExternalLink className="w-2.5 h-2.5 text-rose-600" />
-                    <span>Granite Mountain Behavioral</span>
-                  </a>
-
-                  <a
-                    href="tel:6027672147"
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-100 dark:bg-rose-900/90 hover:bg-rose-200 dark:hover:bg-rose-800 text-rose-900 dark:text-rose-100 text-[10.5px] font-bold border border-rose-300 dark:border-rose-700 transition-colors shadow-2xs"
-                    title="Call or Text Bambi: (602) 767-2147"
-                  >
-                    <Phone className="w-2.5 h-2.5 text-rose-600 dark:text-rose-300" />
-                    <span>6027672147 Bambi</span>
-                  </a>
-
-                  <a
-                    href="https://axiomcareaz.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/80 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-800 dark:text-rose-200 text-[10.5px] font-bold border border-rose-200 dark:border-rose-800 transition-colors shadow-2xs"
-                    title="Axiom Care Medical Detox & Recovery"
-                  >
-                    <ExternalLink className="w-2.5 h-2.5 text-rose-600" />
-                    <span>Axiom Care</span>
-                  </a>
+                  {COMMUNITY_RESOURCE_CATEGORIES.treatment.links.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target={link.url.startsWith('#') || link.url.startsWith('tel:') ? undefined : '_blank'}
+                      rel={link.url.startsWith('#') || link.url.startsWith('tel:') ? undefined : 'noopener noreferrer'}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10.5px] font-bold border transition-colors shadow-2xs ${
+                        link.isTemplate
+                          ? 'border-dashed border-rose-400/80 dark:border-rose-600/80 bg-rose-50/60 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900'
+                          : link.type === 'phone'
+                          ? 'border-rose-300 dark:border-rose-700 bg-rose-100 dark:bg-rose-900/90 hover:bg-rose-200 dark:hover:bg-rose-800 text-rose-900 dark:text-rose-100'
+                          : 'border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/80 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-800 dark:text-rose-200'
+                      }`}
+                      title={link.description || link.title}
+                    >
+                      {link.isTemplate ? (
+                        <Sparkles className="w-2.5 h-2.5 text-rose-600 shrink-0" />
+                      ) : link.type === 'phone' ? (
+                        <>
+                          <Phone className="w-2.5 h-2.5 text-rose-600 dark:text-rose-300 shrink-0" />
+                          <span className="sr-only">6027672147 Bambi</span>
+                        </>
+                      ) : (
+                        <ExternalLink className="w-2.5 h-2.5 text-rose-600 shrink-0" />
+                      )}
+                      <span className="truncate max-w-[155px]">{link.title}</span>
+                    </a>
+                  ))}
                 </div>
               </div>
 
@@ -289,15 +303,34 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                         Legal Help
                       </h4>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                      4 Resource Links
+                    </span>
                   </div>
                   <p className="text-[11.5px] text-stone-600 dark:text-stone-300 leading-snug">
                     Warrant quash clinics, driver's license reinstatement, state ID fee waivers &amp; court fines.
                   </p>
                 </div>
-                <div className="mt-3 pt-2.5 border-t border-stone-100 dark:border-stone-700/60 flex items-center justify-between text-[11px] text-stone-500">
-                  <span className="font-semibold text-blue-600 dark:text-blue-400">Re-Entry Advocacy</span>
-                  <span>Phoenix Court Help</span>
+
+                {/* 4 Direct Resource Links (including editable templates) */}
+                <div className="mt-3 pt-2.5 border-t border-stone-100 dark:border-stone-700/60 flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  {COMMUNITY_RESOURCE_CATEGORIES.legal.links.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target={link.url.startsWith('#') || link.url.startsWith('tel:') ? undefined : '_blank'}
+                      rel={link.url.startsWith('#') || link.url.startsWith('tel:') ? undefined : 'noopener noreferrer'}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition-colors shadow-2xs ${
+                        link.isTemplate
+                          ? 'border-dashed border-blue-400/80 dark:border-blue-600/80 bg-blue-50/60 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900'
+                          : 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/80 hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-800 dark:text-blue-200'
+                      }`}
+                      title={link.description || link.title}
+                    >
+                      <Sparkles className="w-2.5 h-2.5 text-blue-600 shrink-0" />
+                      <span className="truncate max-w-[155px]">{link.title}</span>
+                    </a>
+                  ))}
                 </div>
               </div>
             </div>
